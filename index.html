@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>心理学実験室</title>
+    <title>心理学実験室 - 呪われた研究室</title>
     <style>
-        /* 1. 背景は薄いグレー */
+        /* 全体の背景設定 */
         body {
             margin: 0;
             padding: 0;
@@ -13,65 +13,134 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #f0f0f0; /* 薄いグレー */
+            background-color: #0d0d16;
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
             color: #333;
+            overflow: hidden;
+            background-image: radial-gradient(circle, #1a1a2e 0%, #0d0d16 100%);
         }
 
         .container {
+            position: relative;
+            z-index: 100;
             text-align: center;
-            padding: 2rem;
-            background-color: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            padding: 3rem 2.5rem;
+            background-color: rgba(240, 240, 240, 0.95);
+            border-radius: 4px;
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(185, 29, 29, 0.2);
             max-width: 90%;
-            width: 500px;
+            width: 450px;
+            border: 1px solid #444;
         }
 
-        /* 2. 画面中央に大きな文字で『心理学実験室へようこそ』 */
+        .blood-drip {
+            position: absolute;
+            top: 0;
+            left: 20px;
+            width: 20px;
+            height: 100px;
+            background: #8a0303;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+            animation: drip 3s infinite opacity;
+        }
+
+        .blood-drip::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 5px;
+            width: 10px;
+            height: 10px;
+            background: #8a0303;
+            border-radius: 50%;
+        }
+
+        .handprint {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .hand-left { top: 10px; right: 10px; transform: rotate(15deg); }
+        .hand-bottom { bottom: 20px; left: -30px; transform: rotate(-25deg); opacity: 0.4; }
+
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
-            word-break: keep-all;
+            font-size: 2rem;
+            margin-bottom: 2.5rem;
+            color: #1a1a1a;
+            letter-spacing: 0.2rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
 
-        /* 3. 『実験を開始する』という青いボタン */
         .start-button {
             display: inline-block;
-            padding: 1rem 2.5rem;
-            font-size: 1.25rem;
+            padding: 1.2rem 3rem;
+            font-size: 1.3rem;
             font-weight: bold;
             color: #ffffff;
-            background-color: #007bff; /* 青色 */
+            background-color: #8a0303;
             border: none;
-            border-radius: 50px;
+            border-radius: 0;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
         .start-button:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
+            background-color: #b91d1d;
+            transform: scale(1.05);
         }
 
-        .start-button:active {
-            transform: translateY(0);
+        /* 墓場のシーン */
+        .horror-scene {
+            position: fixed;
+            bottom: -600px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 700px;
+            height: 500px;
+            z-index: 10;
+            transition: bottom 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            pointer-events: none;
         }
 
-        /* カスタムアラート（alert()の代わり） */
+        .horror-scene.active {
+            bottom: -20px;
+        }
+
+        @keyframes zombieSway {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+
+        .zombie-figure { animation: zombieSway 3s infinite ease-in-out; transform-origin: bottom center; }
+
+        @keyframes skeletonShake {
+            0%, 100% { transform: translate(0, 0) rotate(2deg); }
+            50% { transform: translate(-1px, 2px) rotate(2deg); }
+        }
+
+        .skeleton-figure { animation: skeletonShake 0.15s infinite linear; transform-origin: bottom center; }
+
+        /* カスタムアラート */
         #custom-alert {
             display: none;
             position: fixed;
-            top: 50%;
+            top: 40%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: #1a1a1a;
+            color: #eee;
+            padding: 3rem;
+            border-radius: 0;
+            box-shadow: 0 0 100px rgba(138, 3, 3, 0.7);
             z-index: 1000;
             text-align: center;
+            border: 1px solid #8a0303;
+            min-width: 300px;
         }
 
         #overlay {
@@ -81,45 +150,172 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.92);
             z-index: 999;
         }
 
+        /* 攻撃目標のガイコツの手 */
+        .attack-target {
+            position: fixed;
+            width: 150px;
+            height: 250px;
+            bottom: 0;
+            z-index: 1001;
+            cursor: crosshair;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+        }
+
+        .attack-target:active {
+            filter: drop-shadow(0 0 20px rgba(255, 0, 0, 1)) brightness(1.5);
+            transform: scale(0.9);
+        }
+
+        #hand-left { left: 10%; transform: translateY(300px); }
+        #hand-right { right: 10%; transform: translateY(300px) scaleX(-1); }
+
+        #hand-left.show { transform: translateY(0); }
+        #hand-right.show { transform: translateY(0) scaleX(-1); }
+
+        #hand-left.dead { transform: translateY(400px) rotate(-45deg); opacity: 0; }
+        #hand-right.dead { transform: translateY(400px) rotate(45deg) scaleX(-1); opacity: 0; }
+
         .close-btn {
-            margin-top: 1rem;
-            padding: 0.5rem 1.5rem;
-            background: #333;
+            margin-top: 2rem;
+            padding: 0.8rem 2.5rem;
+            background: #444;
+            color: #888;
+            border: 1px solid #555;
+            cursor: not-allowed;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .close-btn.active {
+            background: #8a0303;
             color: white;
-            border: none;
-            border-radius: 4px;
+            border-color: #f00;
             cursor: pointer;
+            box-shadow: 0 0 15px #f00;
+        }
+
+        .hint-text {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <div class="blood-drip" style="left: 10%; height: 60px;"></div>
+        <div class="blood-drip" style="left: 80%; height: 80px;"></div>
+        <svg class="handprint hand-left" viewBox="0 0 100 100" fill="#8a0303"><path d="M30,50 Q25,40 30,30 T35,10 M45,45 Q45,30 50,20 T55,0 M65,45 Q70,30 75,20 T80,5 M80,60 Q90,50 95,45 T100,35 M20,70 Q10,65 5,75 T0,90 Q20,100 50,95 Q80,95 90,80" /></svg>
         <h1>心理学実験室へようこそ</h1>
         <button id="startBtn" class="start-button">実験を開始する</button>
     </div>
 
-    <!-- カスタムメッセージボックス（alert()の代替） -->
+    <!-- 墓場のシーン -->
+    <div id="horrorScene" class="horror-scene">
+        <svg viewBox="0 0 700 500" xmlns="http://www.w3.org/2000/svg">
+            <g class="skeleton-figure">
+                <path d="M450,180 Q450,120 500,120 Q550,120 550,180 Q550,220 525,230 L525,245 L475,245 L475,230 Q450,220 450,180" fill="#d1d1d1" stroke="#888" stroke-width="2"/>
+                <circle cx="480" cy="180" r="10" fill="#000" /><circle cx="520" cy="180" r="10" fill="#000" />
+            </g>
+            <g class="zombie-figure">
+                <ellipse cx="180" cy="180" rx="55" ry="70" fill="#4e6d4e" stroke="#1a2d1a" stroke-width="3"/>
+                <circle cx="160" cy="170" r="10" fill="#fff" /><circle cx="160" cy="170" r="3" fill="#f00" />
+            </g>
+            <path d="M250,500 L450,500 L450,320 Q450,250 350,250 Q250,250 250,320 Z" fill="#444" stroke="#222" stroke-width="4"/>
+            <text x="350" y="360" font-family="serif" font-size="40" fill="#111" text-anchor="middle">R.I.P</text>
+        </svg>
+    </div>
+
+    <!-- 攻撃対象のガイコツの手 -->
+    <div id="hand-left" class="attack-target">
+        <svg viewBox="0 0 100 200" fill="#d1d1d1">
+            <rect x="45" y="100" width="10" height="100" rx="5" />
+            <rect x="20" y="80" width="8" height="60" rx="4" transform="rotate(-20 30 100)" />
+            <rect x="40" y="50" width="8" height="80" rx="4" />
+            <rect x="60" y="60" width="8" height="70" rx="4" transform="rotate(10 60 100)" />
+            <rect x="80" y="90" width="8" height="50" rx="4" transform="rotate(30 80 100)" />
+        </svg>
+    </div>
+    <div id="hand-right" class="attack-target">
+        <svg viewBox="0 0 100 200" fill="#d1d1d1">
+            <rect x="45" y="100" width="10" height="100" rx="5" />
+            <rect x="20" y="80" width="8" height="60" rx="4" transform="rotate(-20 30 100)" />
+            <rect x="40" y="50" width="8" height="80" rx="4" />
+            <rect x="60" y="60" width="8" height="70" rx="4" transform="rotate(10 60 100)" />
+            <rect x="80" y="90" width="8" height="50" rx="4" transform="rotate(30 80 100)" />
+        </svg>
+    </div>
+
     <div id="overlay"></div>
     <div id="custom-alert">
-        <p id="alertMessage" style="font-size: 1.2rem; font-weight: bold;"></p>
-        <button class="close-btn" onclick="closeAlert()">閉じる</button>
+        <p id="alertMessage" style="font-size: 2rem; font-family: serif; color: #8a0303;"></p>
+        <p id="hint" class="hint-text">ガイコツの手を攻撃しろ！（残り3回）</p>
+        <button id="closeBtn" class="close-btn" disabled onclick="closeAlert()">閉じる</button>
     </div>
 
     <script>
-        // 4. ボタンを押すと、アラート（メッセージ）を表示
+        let clickCount = 0;
+        const maxClicks = 3;
+
         const startBtn = document.getElementById('startBtn');
         const overlay = document.getElementById('overlay');
         const customAlert = document.getElementById('custom-alert');
         const alertMessage = document.getElementById('alertMessage');
+        const horrorScene = document.getElementById('horrorScene');
+        const closeBtn = document.getElementById('closeBtn');
+        const handLeft = document.getElementById('hand-left');
+        const handRight = document.getElementById('hand-right');
+        const hint = document.getElementById('hint');
 
         startBtn.addEventListener('click', () => {
-            showAlert('Hello World!');
+            horrorScene.classList.add('active');
+            setTimeout(() => {
+                showAlert('いつもありがとう！');
+                spawnHands();
+            }, 800);
         });
+
+        function spawnHands() {
+            clickCount = 0;
+            closeBtn.disabled = true;
+            closeBtn.classList.remove('active');
+            closeBtn.textContent = '閉じる';
+            hint.textContent = `ガイコツの手を攻撃しろ！（残り${maxClicks}回）`;
+            
+            handLeft.classList.remove('dead');
+            handRight.classList.remove('dead');
+            handLeft.classList.add('show');
+            handRight.classList.add('show');
+        }
+
+        function handleAttack() {
+            if (clickCount >= maxClicks) return;
+
+            clickCount++;
+            const remaining = maxClicks - clickCount;
+
+            if (remaining > 0) {
+                hint.textContent = `ガイコツの手を攻撃しろ！（残り${remaining}回）`;
+            } else {
+                hint.textContent = "ガイコツは逃げていった...";
+                hint.style.color = "#0f0";
+                closeBtn.disabled = false;
+                closeBtn.classList.add('active');
+                closeBtn.textContent = '今だ！閉じる';
+                
+                handLeft.classList.add('dead');
+                handRight.classList.add('dead');
+            }
+        }
+
+        handLeft.addEventListener('click', handleAttack);
+        handRight.addEventListener('click', handleAttack);
 
         function showAlert(msg) {
             alertMessage.textContent = msg;
@@ -128,12 +324,13 @@
         }
 
         function closeAlert() {
+            if (clickCount < maxClicks) return;
             overlay.style.display = 'none';
             customAlert.style.display = 'none';
+            horrorScene.classList.remove('active');
+            handLeft.classList.remove('show');
+            handRight.classList.remove('show');
         }
-
-        // 背景クリックでも閉じるように設定
-        overlay.addEventListener('click', closeAlert);
     </script>
 </body>
 </html>
