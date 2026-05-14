@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stroop Task - jsPsych</title>
-    <!-- jsPsych 7.3.1 本体の読み込み -->
+    <title>Stroop Task - Professional Edition</title>
     <script src="https://unpkg.com/jspsych@7.3.1"></script>
-    <!-- プラグインの読み込み（キーボード反応） -->
     <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.2"></script>
-    <!-- jsPsych スタイルの読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.1/css/jspsych.css">
     
     <style>
         body {
-            background-color: #FFFFFF; /* 背景色: 白 */
-            color: #333333;
-            font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif; /* 指定フォント */
+            background-color: #000000;
+            color: #FFFFFF;
+            font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
@@ -23,9 +22,9 @@
             align-items: center;
             height: 100vh;
             overflow: hidden;
+            user-select: none;
         }
 
-        /* jsPsych のターゲットコンテナ */
         #jspsych-target {
             width: 100%;
             height: 100%;
@@ -34,88 +33,177 @@
             align-items: center;
         }
 
-        /* 教示テキストのサイズ設定 */
+        .stimulus-text {
+            font-size: 80px;
+            font-weight: bold;
+            letter-spacing: 4px;
+        }
+
+        #crack-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+
+        .crack-line {
+            stroke: rgba(255, 255, 255, 0.8);
+            stroke-width: 2;
+            fill: none;
+        }
+
         .instruction-text {
             font-size: 24px;
-            line-height: 1.6;
+            line-height: 1.8;
             text-align: center;
         }
 
-        /* 刺激（文字）のサイズ設定 */
-        .stimulus-text {
-            font-size: 60px;
+        .key-hint {
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #333;
             font-weight: bold;
-            user-select: none;
-        }
-
-        /* 注視点のスタイル */
-        .fixation-text {
-            font-size: 60px;
-            font-weight: normal;
         }
     </style>
 </head>
 <body>
     <div id="jspsych-target"></div>
+    <!-- ガラスのひび割れを描画するためのSVGコンテナ -->
+    <svg id="crack-overlay"></svg>
 
     <script>
+
+        // ガラスが割れる音を合成 (Tone.js)
+        const playGlassBreakSound = () => {
+            const noise = new Tone.Noise("white").start();
+            const filter = new Tone.Filter(8000, "highpass").toDestination();
+            const env = new Tone.AmplitudeEnvelope({
+                attack: 0.001,
+                decay: 0.3,
+                sustain: 0,
+                release: 0.1
+            }).connect(filter);
+            
+            noise.connect(env);
+            env.triggerAttackRelease(0.3);
+
+            // 高音のキラキラした破片音を混ぜる
+            const metal = new Tone.MetalSynth({
+                frequency: 400,
+                envelope: { attack: 0.001, decay: 0.2, release: 0.1 },
+                harmonicity: 5.1,
+                modulationIndex: 32,
+                resonance: 4000,
+                octaves: 1.5
+            }).toDestination();
+            metal.triggerAttackRelease("C6", "16n");
+        };
+
+        // 画面にひび割れを描画する関数
+        const triggerCrackEffect = () => {
+            const overlay = document.getElementById('crack-overlay');
+            overlay.innerHTML = ''; // 以前のひびを消去
+            overlay.style.opacity = '1';
+            
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            // 中心から放射状に伸びるひびを作成
+            for (let i = 0; i < 12; i++) {
+                const angle = (Math.PI * 2 / 12) * i + Math.random() * 0.5;
+                const length = Math.max(width, height);
+                const endX = centerX + Math.cos(angle) * length;
+                const endY = centerY + Math.sin(angle) * length;
+                
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                // ジグザグな線を生成
+                let d = `M ${centerX} ${centerY}`;
+                let currX = centerX;
+                let currY = centerY;
+                const segments = 5;
+                for (let s = 1; s <= segments; s++) {
+                    currX += (endX - centerX) / segments + (Math.random() - 0.5) * 100;
+                    currY += (endY - centerY) / segments + (Math.random() - 0.5) * 100;
+                    d += ` L ${currX} ${currY}`;
+                }
+                
+                line.setAttribute("d", d);
+                line.setAttribute("class", "crack-line");
+                overlay.appendChild(line);
+            }
+
+            // 画面を少し揺らす
+            document.body.style.transform = `translate(${(Math.random()-0.5)*20}px, ${(Math.random()-0.5)*20}px)`;
+            
+            // 一定時間で消去
+            setTimeout(() => {
+                overlay.style.opacity = '0';
+                document.body.style.transform = 'translate(0, 0)';
+            }, 400);
+        };
+
         const jsPsych = initJsPsych({
             display_element: 'jspsych-target',
             on_finish: function() {
-                // 実験終了時にデータをCSV形式で表示
                 jsPsych.data.displayData('csv');
             }
         });
 
-        // 文字と色の定義
         const stimuli_pool = [
-            // 一致条件 (Congruent)
-            { text: "赤", color: "red", condition: "congruent", correct_key: "r" },
-            { text: "青", color: "blue", condition: "congruent", correct_key: "b" },
-            { text: "緑", color: "green", condition: "congruent", correct_key: "g" },
-            // 不一致条件 (Incongruent)
-            { text: "赤", color: "blue", condition: "incongruent", correct_key: "b" },
-            { text: "赤", color: "green", condition: "incongruent", correct_key: "g" },
-            { text: "青", color: "red", condition: "incongruent", correct_key: "r" },
-            { text: "青", color: "green", condition: "incongruent", correct_key: "g" },
-            { text: "緑", color: "red", condition: "incongruent", correct_key: "r" },
-            { text: "緑", color: "blue", condition: "incongruent", correct_key: "b" }
+            { text: "RED", color: "red", condition: "congruent", correct_key: "r" },
+            { text: "BLUE", color: "blue", condition: "congruent", correct_key: "b" },
+            { text: "GREEN", color: "green", condition: "congruent", correct_key: "g" },
+            { text: "RED", color: "blue", condition: "incongruent", correct_key: "b" },
+            { text: "RED", color: "green", condition: "incongruent", correct_key: "g" },
+            { text: "BLUE", color: "red", condition: "incongruent", correct_key: "r" },
+            { text: "BLUE", color: "green", condition: "incongruent", correct_key: "g" },
+            { text: "GREEN", color: "red", condition: "incongruent", correct_key: "r" },
+            { text: "GREEN", color: "blue", condition: "incongruent", correct_key: "b" }
         ];
 
         const timeline = [];
 
-        // 教示画面 (Fullscreenはエラー回避のため削除)
+        // 教示
         timeline.push({
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `
                 <div class="instruction-text">
-                    <p>文字の『色』をキーボードで答えてください。</p>
-                    <p>赤色の文字なら <strong style="color:red"> 'r' </strong></p>
-                    <p>青色の文字なら <strong style="color:blue"> 'b' </strong></p>
-                    <p>緑色の文字なら <strong style="color:green"> 'g' </strong></p>
-                    <br>
-                    <p>準備ができたら<strong>スペースキー</strong>を押して開始します。</p>
+                    <p>Identify the <span style="color: #FFD700; font-weight: bold;">COLOR</span> of the word.</p>
+                    <div style="margin: 30px 0; text-align: left; display: inline-block;">
+                        <p>・If the color is <span style="color:red">RED</span>: Press <span class="key-hint">R</span></p>
+                        <p>・If the color is <span style="color:blue">BLUE</span>: Press <span class="key-hint">B</span></p>
+                        <p>・If the color is <span style="color:green">GREEN</span>: Press <span class="key-hint">G</span></p>
+                    </div>
+                    <p>Be careful! Making a mistake will "break" the screen.</p>
+                    <p style="margin-top: 30px; font-size: 20px; color: #aaa;">[ Press SPACE to Start ]</p>
                 </div>
             `,
             choices: [' '],
-            post_trial_gap: 500
+            on_start: async () => {
+                // Audioコンテキストの開始（ブラウザ制限対策）
+                await Tone.start();
+            }
         });
 
+        // テスト手続き
         const test_procedure = {
-            // メイン試行ループ: 10回ランダムサンプリング
             timeline: [
-                // a. 注視点 (+)
                 {
                     type: jsPsychHtmlKeyboardResponse,
-                    stimulus: '<div class="fixation-text">+</div>',
+                    stimulus: '<div style="font-size:60px;">+</div>',
                     choices: "NO_KEYS",
-                    trial_duration: 500,
-                    data: { task: 'fixation' }
+                    trial_duration: 500
                 },
-                // b. 刺激提示
                 {
                     type: jsPsychHtmlKeyboardResponse,
-                    stimulus: function() {
+                    stimulus: () => {
                         const text = jsPsych.timelineVariable('text');
                         const color = jsPsych.timelineVariable('color');
                         return `<div class="stimulus-text" style="color: ${color}">${text}</div>`;
@@ -124,29 +212,35 @@
                     data: {
                         task: 'response',
                         correct_response: jsPsych.timelineVariable('correct_key'),
-                        condition: jsPsych.timelineVariable('condition'),
-                        text_content: jsPsych.timelineVariable('text'),
                         color_content: jsPsych.timelineVariable('color')
                     },
                     on_finish: function(data) {
-                        // 正誤判定
                         data.correct = (data.response == data.correct_response);
+                        
+                        if (data.correct) {
+                            // 正解：クラッカー
+                            confetti({
+                                particleCount: 80,
+                                spread: 70,
+                                origin: { y: 0.6 },
+                                colors: [data.color_content, '#ffffff']
+                            });
+                        } else {
+                            // 不正解：ガラス割れ演出
+                            triggerCrackEffect();
+                            playGlassBreakSound();
+                        }
                     }
                 },
-                // c. 試行間隔 (ITI)
                 {
                     type: jsPsychHtmlKeyboardResponse,
                     stimulus: '',
                     choices: "NO_KEYS",
-                    trial_duration: 1000,
-                    data: { task: 'iti' }
+                    trial_duration: 1000
                 }
             ],
             timeline_variables: stimuli_pool,
-            sample: {
-                type: 'with-replacement', // 重複ありのランダム
-                size: 10 // 合計10試行
-            }
+            sample: { type: 'with-replacement', size: 10 }
         };
         timeline.push(test_procedure);
 
