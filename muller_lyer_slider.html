@@ -35,7 +35,7 @@
     .results-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
     .results-table th, .results-table td { padding: 8px; text-align: center; border: 1px solid #e2e8f0; }
     .jspsych-btn { font-size: 15px; padding: 8px 20px; }
-    .id-image { max-width: 100%; height: auto; margin-bottom: 20px; border-radius: 8px; }
+    .cat-icon { font-size: 80px; margin-bottom: 10px; display: block; text-align: center; }
   </style>
 </head>
 <body>
@@ -134,7 +134,7 @@
     const timeline = [{
       type: jsPsychSurveyText,
       questions: [{ 
-        prompt: '<img src="red.jpg" class="id-image"><br><strong>参加者IDを入力してください</strong>', 
+        prompt: '<span class="cat-icon">🐱</span><strong>参加者IDを入力してください</strong>', 
         name: "subject_id", 
         required: true 
       }],
