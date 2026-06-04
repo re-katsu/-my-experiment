@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ミュラー・リヤー錯視 調整法実験</title>
+  <script src="https://unpkg.com/jspsych@7.3.1"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.2"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-canvas-slider-response@1.1.2"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-text@1.1.2"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-multi-choice@1.1.2"></script>
+  <link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.1/css/jspsych.css">
+
+  <style>
+    body { background-color: #f8fafc; font-family: "Helvetica Neue", Arial, sans-serif; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; padding-top: 20px; }
+    .jspsych-content { max-width: 800px; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); width: 95%; }
+    canvas { border: 1px solid #e2e8f0; background: white; display: block; margin: 15px auto; border-radius: 8px; }
+    
+    .jspsych-survey-multi-choice-option { display: inline-block; margin-right: 20px; }
+    
+    /* 星形スライダーのスタイル */
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 30px;
+      height: 30px;
+      background: gold;
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      cursor: pointer;
+    }
+
+    h2 { margin: 10px 0; }
+    p { margin: 5px 0 15px 0; }
+    .report-header { background: #dcfce7; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+    .report-title { color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 5px; margin-bottom: 15px; }
+    .results-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .results-table th, .results-table td { padding: 8px; text-align: center; border: 1px solid #e2e8f0; }
+    .jspsych-btn { font-size: 15px; padding: 8px 20px; }
+    .id-image { max-width: 100%; height: auto; margin-bottom: 20px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div id="jspsych-target"></div>
+  <script>
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbxMogK19nwS7aRksoYJlY61Qi39hZ_2FEVxe7HF90OhjDrlbTry9k9datAIG2mE5piL/exec';
+
+    const jsPsych = initJsPsych({
+      display_element: 'jspsych-target',
+      on_finish: function() {
+        const fullData = jsPsych.data.get().filter({trial_type: 'canvas-slider-response'});
+        const subject_id = jsPsych.data.get().filterCustom(d => d.subject_id || d.response?.subject_id).values()[0].response.subject_id;
+        const device_type = jsPsych.data.get().filterCustom(d => d.response?.device).values()[0].response.device;
+        const total_time_ms = jsPsych.getTotalTime();
+        const mins = Math.floor(total_time_ms / 60000);
+        const secs = Math.floor((total_time_ms % 60000) / 1000);
+        const time_str = `${mins}分${secs}秒`;
+        
+        const exportData = fullData.values().map(d => ({
+          subject_id: subject_id,
+          device: device_type,
+          total_duration: time_str,
+          timestamp: d.time_elapsed,
+          angle: d.angle,
+          wing_length: d.feather,
+          pse: d.response,
+          error_amount: Math.abs(d.response - 200)
+        }));
+
+        document.getElementById('jspsych-target').innerHTML = `
+          <div class="jspsych-content">
+            <h2>データを送信しています...</h2>
+            <p>しばらくお待ちください。</p>
+          </div>`;
+
+        fetch(GAS_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(exportData)
+        }).then(() => {
+          showFinalReport(subject_id, fullData.values(), time_str);
+        }).catch(err => {
+          document.getElementById('jspsych-target').innerHTML = `<div class="jspsych-content"><p style="color:red;">送信に失敗しました: ${err.message}</p></div>`;
+        });
+      }
+    });
+
+    function showFinalReport(subject_id, data, time) {
+      const conditions = [{a: 15, f: 20}, {a: 15, f: 50}, {a: 75, f: 20}, {a: 75, f: 50}];
+      let html = `
+        <div class="jspsych-content">
+          <div class="report-header">
+            <h2 style="margin:0;">✨ 実験終了！ご協力ありがとうございました ✨</h2>
+            <p>今回の所要時間: ${time}</p>
+          </div>
+          <h2 class="report-title">実験結果レポート (ID: ${subject_id})</h2>
+          <table class="results-table">
+            <tr><th>角度</th><th>羽の長さ</th><th>平均調整値</th></tr>
+            ${conditions.map(cond => {
+              const subset = data.filter(d => d.angle === cond.a && d.feather === cond.f);
+              const avg = (subset.reduce((sum, d) => sum + parseInt(d.response), 0) / subset.length).toFixed(1);
+              return `<tr><td>${cond.a}度</td><td>${cond.f}px</td><td><strong>${avg} px</strong></td></tr>`;
+            }).join('')}
+          </table>
+          <br><button class="jspsych-btn" onclick="location.reload()">最初からやり直す</button>
+        </div>`;
+      document.getElementById('jspsych-target').innerHTML = html;
+    }
+
+    function draw(c, length, angle, f_len) {
+      const ctx = c.getContext('2d');
+      ctx.clearRect(0, 0, c.width, c.height);
+      const centerX = c.width / 2;
+      const angleRad = (angle * Math.PI) / 180;
+      const drawLine = (y, len, inward) => {
+        ctx.beginPath();
+        ctx.moveTo(centerX - len/2, y); ctx.lineTo(centerX + len/2, y);
+        const dir = inward ? 1 : -1;
+        ctx.moveTo(centerX - len/2, y); ctx.lineTo(centerX - len/2 + f_len * Math.cos(angleRad) * dir, y - f_len * Math.sin(angleRad));
+        ctx.moveTo(centerX - len/2, y); ctx.lineTo(centerX - len/2 + f_len * Math.cos(angleRad) * dir, y + f_len * Math.sin(angleRad));
+        ctx.moveTo(centerX + len/2, y); ctx.lineTo(centerX + len/2 - f_len * Math.cos(angleRad) * dir, y - f_len * Math.sin(angleRad));
+        ctx.moveTo(centerX + len/2, y); ctx.lineTo(centerX + len/2 - f_len * Math.cos(angleRad) * dir, y + f_len * Math.sin(angleRad));
+        ctx.stroke();
+      };
+      ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
+      drawLine(90, 200, true);
+      drawLine(210, length, false);
+    }
+
+    const trials = jsPsych.randomization.shuffle([
+      {angle: 15, feather: 20}, {angle: 15, feather: 50}, 
+      {angle: 75, feather: 20}, {angle: 75, feather: 50}
+    ].flatMap(i => Array(3).fill(i)));
+
+    const timeline = [{
+      type: jsPsychSurveyText,
+      questions: [{ 
+        prompt: '<img src="red.jpg" class="id-image"><br><strong>参加者IDを入力してください</strong>', 
+        name: "subject_id", 
+        required: true 
+      }],
+      button_label: "次へ"
+    }, {
+      type: jsPsychSurveyMultiChoice,
+      questions: [{ prompt: "<strong>使用機材を選択してください</strong>", options: ["パソコン", "スマホ", "タブレット"], name: "device", required: true }],
+      button_label: "次へ"
+    }, {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: "<h2>実験開始</h2><p>下の線を調整して、上の線と同じ長さに見えるようにしてください。</p>",
+      choices: ["実験開始"]
+    }];
+
+    trials.forEach((cond, idx) => {
+      timeline.push({
+        type: jsPsychCanvasSliderResponse,
+        canvas_size: [300, 600],
+        stimulus: (c) => draw(c, 200, cond.angle, cond.feather),
+        min: 50, max: 350, step: 1, slider_start: 200,
+        button_label: "決定",
+        prompt: `<p>試行 ${idx + 1} / 12</p>`,
+        data: { angle: cond.angle, feather: cond.feather },
+        on_load: function() {
+          const slider = document.querySelector('input[type=range]');
+          const canvas = document.querySelector('canvas');
+          slider.oninput = (e) => draw(canvas, e.target.value, cond.angle, cond.feather);
+        }
+      });
+    });
+
+    jsPsych.run(timeline);
+  </script>
+</body>
+</html>
