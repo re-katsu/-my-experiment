@@ -21,11 +21,9 @@
             overflow: hidden;
             min-height: 180px;
             cursor: pointer;
-            /* タップ時のハイライトを抑える */
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 動物アイコンの基本スタイル */
         .animal-icon {
             display: inline-block;
             font-size: 3rem;
@@ -33,17 +31,15 @@
             transition: transform 0.5s ease;
         }
 
-        /* アニメーション定義 */
+        /* アニメーション */
         @keyframes animalRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes animalSwing { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-3deg); } 75% { transform: translateX(5px) rotate(3deg); } }
         @keyframes animalJump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
 
-        /* ホバーまたはアクティブ時にアニメーションを適用 */
         .card:hover .animal-chick, .card.active .animal-chick { animation: animalRotate 1s ease-in-out; }
         .card:hover .animal-dog, .card.active .animal-dog { animation: animalSwing 1.5s ease-in-out infinite; }
         .card:hover .animal-cat, .card.active .animal-cat { animation: animalJump 0.8s ease-in-out infinite; }
 
-        /* ボタンとバルーンの表示制御 */
         .action-btn, .balloon {
             opacity: 0;
             visibility: hidden;
@@ -79,8 +75,10 @@
         </header>
 
         <main class="grid gap-6 md:grid-cols-1">
-            <!-- 実験0 -->
-            <section class="card bg-white p-6 rounded-3xl border-4 border-pink-100 shadow-sm" ontouchstart="this.classList.toggle('active')">
+            <!-- 実験カード共通のイベント設定 -->
+            <section class="card bg-white p-6 rounded-3xl border-4 border-pink-100 shadow-sm" 
+                     ontouchstart="this.classList.add('active')" 
+                     ontouchend="this.classList.remove('active')">
                 <div class="balloon absolute bottom-0 left-[20%]" style="animation-delay: 0.1s;">🎈</div>
                 <div class="balloon absolute bottom-0 left-[80%]" style="animation-delay: 0.3s;">💖</div>
                 <div class="flex items-center mb-2">
@@ -95,8 +93,9 @@
                 </div>
             </section>
 
-            <!-- 実験1 -->
-            <section class="card bg-white p-6 rounded-3xl border-4 border-purple-100 shadow-sm" ontouchstart="this.classList.toggle('active')">
+            <section class="card bg-white p-6 rounded-3xl border-4 border-purple-100 shadow-sm" 
+                     ontouchstart="this.classList.add('active')" 
+                     ontouchend="this.classList.remove('active')">
                 <div class="balloon absolute bottom-0 left-[30%]" style="animation-delay: 0.1s;">⭐</div>
                 <div class="balloon absolute bottom-0 left-[70%]" style="animation-delay: 0.4s;">🎈</div>
                 <div class="flex items-center mb-2">
@@ -111,8 +110,9 @@
                 </div>
             </section>
 
-            <!-- 実験2 -->
-            <section class="card bg-white p-6 rounded-3xl border-4 border-blue-100 shadow-sm" ontouchstart="this.classList.toggle('active')">
+            <section class="card bg-white p-6 rounded-3xl border-4 border-blue-100 shadow-sm" 
+                     ontouchstart="this.classList.add('active')" 
+                     ontouchend="this.classList.remove('active')">
                 <div class="balloon absolute bottom-0 left-[40%]" style="animation-delay: 0.2s;">✨</div>
                 <div class="balloon absolute bottom-0 left-[60%]" style="animation-delay: 0.5s;">💖</div>
                 <div class="flex items-center mb-2">
@@ -130,7 +130,7 @@
 
         <div class="mt-12 p-6 bg-yellow-50 rounded-2xl border-2 border-yellow-200 text-center">
             <p class="text-sm text-yellow-800 font-bold">✨ たのしい仕掛け ✨</p>
-            <p class="text-sm text-gray-600 mt-2">PCではカーソルを合わせるか、スマホではタップしてみてください！<br>動物たちが動き出し、バルーンが飛び出すかわいい演出が楽しめます。</p>
+            <p class="text-sm text-gray-600 mt-2">PCではカーソルを合わせるか、スマホではカードを触れ続けてみてください！<br>動物たちが動き出し、バルーンが飛び出すかわいい演出が楽しめます。</p>
         </div>
 
         <footer class="mt-16 text-center text-sm text-gray-400">
