@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ミュラー・リヤー錯視 調整法実験</title>
   <script src="https://unpkg.com/jspsych@7.3.1"></script>
   <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.2"></script>
@@ -11,31 +12,51 @@
   <link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.1/css/jspsych.css">
 
   <style>
-    body { background-color: #f8fafc; font-family: "Helvetica Neue", Arial, sans-serif; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; padding-top: 20px; }
-    .jspsych-content { max-width: 800px; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); width: 95%; }
-    canvas { border: 1px solid #e2e8f0; background: white; display: block; margin: 15px auto; border-radius: 8px; }
+    body { 
+      background-color: #f8fafc; 
+      font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif; 
+      line-height: 1.6;
+      display: flex; 
+      justify-content: center; 
+      min-height: 100vh; 
+      margin: 0; 
+      padding: 20px 10px;
+    }
+    .jspsych-content { 
+      max-width: 600px; 
+      padding: 30px; 
+      background: white; 
+      border-radius: 16px; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+      width: 100%;
+    }
+    h2 { margin: 10px 0; color: #1e293b; }
+    p { margin: 5px 0 20px 0; font-size: 1.2rem; color: #334155; }
+    canvas { border: 1px solid #e2e8f0; background: white; display: block; margin: 20px auto; border-radius: 8px; max-width: 100%; }
     
-    .jspsych-survey-multi-choice-option { display: inline-block; margin-right: 20px; }
-    
-    /* 星形スライダーのスタイル */
+    .jspsych-btn { 
+      font-size: 1.1rem; 
+      padding: 15px 30px; 
+      border-radius: 12px; 
+      background-color: #2563eb; 
+      color: white; 
+      border: none;
+      cursor: pointer;
+    }
+    .jspsych-btn:hover { background-color: #1d4ed8; }
+
+    input[type=range] { width: 80%; max-width: 400px; margin: 20px 0; }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 30px;
-      height: 30px;
+      width: 35px;
+      height: 35px;
       background: gold;
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
       cursor: pointer;
     }
-
-    h2 { margin: 10px 0; }
-    p { margin: 5px 0 15px 0; }
-    .report-header { background: #dcfce7; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
-    .report-title { color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 5px; margin-bottom: 15px; }
-    .results-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    .results-table th, .results-table td { padding: 8px; text-align: center; border: 1px solid #e2e8f0; }
-    .jspsych-btn { font-size: 15px; padding: 8px 20px; }
-    .cat-icon { font-size: 80px; margin-bottom: 10px; display: block; text-align: center; }
+    .trial-counter { color: #64748b; font-size: 0.9rem; margin-bottom: 10px; }
+    .cat-icon { font-size: 60px; display: block; text-align: center; margin-bottom: 15px; }
   </style>
 </head>
 <body>
@@ -67,8 +88,8 @@
 
         document.getElementById('jspsych-target').innerHTML = `
           <div class="jspsych-content">
-            <h2>データを送信しています...</h2>
-            <p>しばらくお待ちください。</p>
+            <h2>送信中...</h2>
+            <p>データを送っています。しばらくお待ちください。</p>
           </div>`;
 
         fetch(GAS_URL, {
@@ -79,7 +100,7 @@
         }).then(() => {
           showFinalReport(subject_id, fullData.values(), time_str);
         }).catch(err => {
-          document.getElementById('jspsych-target').innerHTML = `<div class="jspsych-content"><p style="color:red;">送信に失敗しました: ${err.message}</p></div>`;
+          document.getElementById('jspsych-target').innerHTML = `<div class="jspsych-content"><p style="color:red;">送信エラー: ${err.message}</p></div>`;
         });
       }
     });
@@ -88,20 +109,10 @@
       const conditions = [{a: 15, f: 20}, {a: 15, f: 50}, {a: 75, f: 20}, {a: 75, f: 50}];
       let html = `
         <div class="jspsych-content">
-          <div class="report-header">
-            <h2 style="margin:0;">✨ 実験終了！ご協力ありがとうございました ✨</h2>
-            <p>今回の所要時間: ${time}</p>
-          </div>
-          <h2 class="report-title">実験結果レポート (ID: ${subject_id})</h2>
-          <table class="results-table">
-            <tr><th>角度</th><th>羽の長さ</th><th>平均調整値</th></tr>
-            ${conditions.map(cond => {
-              const subset = data.filter(d => d.angle === cond.a && d.feather === cond.f);
-              const avg = (subset.reduce((sum, d) => sum + parseInt(d.response), 0) / subset.length).toFixed(1);
-              return `<tr><td>${cond.a}度</td><td>${cond.f}px</td><td><strong>${avg} px</strong></td></tr>`;
-            }).join('')}
-          </table>
-          <br><button class="jspsych-btn" onclick="location.reload()">最初からやり直す</button>
+          <h2>ありがとうございました！</h2>
+          <p>実験は終了です。ご協力感謝いたします。</p>
+          <p style="font-size: 1rem;">所要時間: ${time}</p>
+          <button class="jspsych-btn" onclick="location.reload()">最初からやり直す</button>
         </div>`;
       document.getElementById('jspsych-target').innerHTML = html;
     }
@@ -133,19 +144,19 @@
 
     const timeline = [{
       type: jsPsychSurveyText,
-      questions: [{ 
-        prompt: '<span class="cat-icon">🐱</span><strong>参加者IDを入力してください</strong>', 
-        name: "subject_id", 
-        required: true 
-      }],
+      questions: [{ prompt: '<span class="cat-icon">🐱</span><strong>参加者IDを入力してください</strong>', name: "subject_id", required: true }],
       button_label: "次へ"
     }, {
       type: jsPsychSurveyMultiChoice,
-      questions: [{ prompt: "<strong>使用機材を選択してください</strong>", options: ["パソコン", "スマホ", "タブレット"], name: "device", required: true }],
+      questions: [{ prompt: "<strong>お使いの端末を選んでください</strong>", options: ["パソコン", "スマホ", "タブレット"], name: "device", required: true }],
       button_label: "次へ"
     }, {
       type: jsPsychHtmlButtonResponse,
-      stimulus: "<h2>実験開始</h2><p>下の線を調整して、上の線と同じ長さに見えるようにしてください。</p>",
+      stimulus: `
+        <h2>これからテストを始めます</h2>
+        <p style="text-align: left;">ご協力ありがとうございます。<br>これから短い視覚のテストを行います。<br><br>
+        画面に2つの「矢印のような図形」が上下に並んで表示されます。<br>下の図形は、スライダーを動かすと長さが変わります。<br><br>
+        スライダーを左右に動かして、<strong>「上の横線」と「下の横線」がピッタリ同じ長さ</strong>に見えるところで、「決定」ボタンを押してください。</p>`,
       choices: ["実験開始"]
     }];
 
@@ -156,7 +167,7 @@
         stimulus: (c) => draw(c, 200, cond.angle, cond.feather),
         min: 50, max: 350, step: 1, slider_start: 200,
         button_label: "決定",
-        prompt: `<p>試行 ${idx + 1} / 12</p>`,
+        prompt: `<div class="trial-counter">現在 ${idx + 1} 回目 / 全 12 回</div>`,
         data: { angle: cond.angle, feather: cond.feather },
         on_load: function() {
           const slider = document.querySelector('input[type=range]');
