@@ -20,17 +20,20 @@
       font-family: sans-serif; 
       display: flex; justify-content: center; align-items: flex-start; 
       min-height: 100vh; margin: 0; padding: 10px;
+      box-sizing: border-box;
     }
     .jspsych-content { 
       max-width: 500px; width: 100%; padding: 20px; 
       background: rgba(255, 255, 255, 0.95); 
       border-radius: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
       text-align: center;
+      box-sizing: border-box;
     }
     canvas { 
       border: 3px solid #f59e0b; background: white; 
       margin: 15px auto; border-radius: 15px;
-      width: 100%; max-width: 400px; height: auto;
+      width: 100%; max-width: 350px; height: auto;
+      display: block;
     }
     .jspsych-btn { 
       font-size: 1.1rem; padding: 15px 30px; border-radius: 40px; 
@@ -38,9 +41,14 @@
       margin: 10px; width: 80%;
     }
     
-    /* スマホ対応：スライダーつまみの完全リセット */
+    /* スマホ対応：スライダーつまみの完全リセットと幅の制限 */
     input[type=range] { 
-      -webkit-appearance: none; width: 90%; background: transparent; margin: 20px 0;
+      -webkit-appearance: none; 
+      width: 85%; 
+      max-width: 350px; 
+      background: transparent; 
+      margin: 20px auto;
+      display: block;
     }
     input[type=range]::-webkit-slider-runnable-track {
       width: 100%; height: 10px; background: #fbbf24; border-radius: 5px;
@@ -77,6 +85,8 @@
 
     function draw(c, length, angle, f_len) {
       const ctx = c.getContext('2d');
+      // キャンバスの大きさを動的に調整
+      const dpr = window.devicePixelRatio || 1;
       ctx.clearRect(0, 0, c.width, c.height);
       const centerX = c.width / 2;
       const angleRad = (angle * Math.PI) / 180;
@@ -120,7 +130,7 @@
     trials.forEach((cond, idx) => {
       timeline.push({
         type: jsPsychCanvasSliderResponse,
-        canvas_size: [300, 600],
+        canvas_size: [300, 400],
         stimulus: (c) => draw(c, 200, cond.angle, cond.feather),
         min: 50, max: 350, step: 1, slider_start: 200,
         button_label: "決定🐤",
