@@ -13,7 +13,6 @@
 
   <style>
     body { 
-      /* 水玉模様の背景 */
       background-color: #fef3c7; 
       background-image: radial-gradient(#fcd34d 15%, transparent 16%),
                         radial-gradient(#fcd34d 15%, transparent 16%);
@@ -58,6 +57,17 @@
       background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🐤</text></svg>');
       background-size: contain;
       background-repeat: no-repeat;
+    }
+    
+    /* ふわふわ動くアニメーション */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0px); }
+    }
+    .float-icon {
+      display: inline-block;
+      animation: float 2s ease-in-out infinite;
     }
     
     .counter { color: #b45309; font-weight: bold; margin-bottom: 10px; }
@@ -107,7 +117,7 @@
 
     const timeline = [{
       type: jsPsychSurveyText,
-      questions: [{ prompt: '<span class="cat-icon">🐣</span>参加者IDを教えてね', name: "subject_id", required: true }],
+      questions: [{ prompt: '<span class="cat-icon float-icon">🐣</span>参加者IDを教えてね', name: "subject_id", required: true }],
       button_label: "次へ"
     }, {
       type: jsPsychSurveyMultiChoice,
