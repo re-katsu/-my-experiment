@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ミュラー・リヤー錯視 調整法実験</title>
+  <script src="https://unpkg.com/jspsych@7.3.1"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.2"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-canvas-slider-response@1.1.2"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-text@1.1.2"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-multi-choice@1.1.2"></script>
+  <link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.1/css/jspsych.css">
+
+  <style>
+    body { 
+      /* 水玉模様の背景 */
+      background-color: #fef3c7; 
+      background-image: radial-gradient(#fcd34d 15%, transparent 16%),
+                        radial-gradient(#fcd34d 15%, transparent 16%);
+      background-size: 60px 60px;
+      background-position: 0 0, 30px 30px;
+      font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif; 
+      display: flex; justify-content: center; align-items: flex-start; 
+      min-height: 100vh; margin: 0; padding: 20px; line-height: 1.6;
+    }
+    .jspsych-content { 
+      max-width: 600px; padding: 30px; background: rgba(255, 255, 255, 0.95); 
+      border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+      width: 100%; font-size: 1.2rem; text-align: center;
+    }
+    canvas { 
+      border: 4px solid #f59e0b; background: white; 
+      display: block; margin: 20px auto; border-radius: 20px;
+      max-width: 100%; height: auto; touch-action: none;
+    }
+    .jspsych-btn { 
+      font-size: 1.2rem; padding: 15px 40px; border-radius: 50px; 
+      background: #f59e0b; color: white; border: none; cursor: pointer;
+      margin-top: 20px; transition: transform 0.2s, background 0.2s;
+    }
+    .jspsych-btn:hover { background: #d97706; transform: scale(1.05); }
+    
+    input[type=range] { 
+      width: 80%; max-width: 400px; cursor: pointer;
+      -webkit-appearance: none; background: transparent;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%; height: 12px; background: #fbbf24; border-radius: 6px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 60px; width: 60px;
+      background: transparent;
+      cursor: pointer;
+      margin-top: -24px;
+      border: none;
+      box-shadow: none;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🐤</text></svg>');
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+    
+    .counter { color: #b45309; font-weight: bold; margin-bottom: 10px; }
+    .cat-icon { font-size: 60px; display: block; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div id="jspsych-target"></div>
+  <script>
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbxMogK19nwS7aRksoYJlY61Qi39hZ_2FEVxe7HF90OhjDrlbTry9k9datAIG2mE5piL/exec';
+
+    const jsPsych = initJsPsych({
+      display_element: 'jspsych-target',
+      on_finish: function() {
+        document.getElementById('jspsych-target').innerHTML = '<div class="jspsych-content"><h2>送信が完了しました！</h2><p>ご協力ありがとうございました！またね🐤</p></div>';
+      }
+    });
+
+    let startTime;
+
+    function draw(c, length, angle, f_len) {
+      const ctx = c.getContext('2d');
+      ctx.clearRect(0, 0, c.width, c.height);
+      const centerX = c.width / 2;
+      const angleRad = (angle * Math.PI) / 180;
+      
+      const drawLine = (y, len, inward) => {
+        ctx.beginPath();
+        ctx.strokeStyle = '#374151'; ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.moveTo(centerX - len/2, y); ctx.lineTo(centerX + len/2, y);
+        const dir = inward ? 1 : -1;
+        ctx.moveTo(centerX - len/2, y); ctx.lineTo(centerX - len/2 + f_len * Math.cos(angleRad) * dir, y - f_len * Math.sin(angleRad));
+        ctx.moveTo(centerX - len/2, y); ctx.lineTo(centerX - len/2 + f_len * Math.cos(angleRad) * dir, y + f_len * Math.sin(angleRad));
+        ctx.moveTo(centerX + len/2, y); ctx.lineTo(centerX + len/2 - f_len * Math.cos(angleRad) * dir, y - f_len * Math.sin(angleRad));
+        ctx.moveTo(centerX + len/2, y); ctx.lineTo(centerX + len/2 - f_len * Math.cos(angleRad) * dir, y + f_len * Math.sin(angleRad));
+        ctx.stroke();
+      };
+      drawLine(90, 200, true);
+      drawLine(210, length, false);
+    }
+
+    const trials = jsPsych.randomization.shuffle([
+      {angle: 15, feather: 20}, {angle: 15, feather: 50}, 
+      {angle: 75, feather: 20}, {angle: 75, feather: 50}
+    ].flatMap(i => Array(3).fill(i)));
+
+    const timeline = [{
+      type: jsPsychSurveyText,
+      questions: [{ prompt: '<span class="cat-icon">🐣</span>参加者IDを教えてね', name: "subject_id", required: true }],
+      button_label: "次へ"
+    }, {
+      type: jsPsychSurveyMultiChoice,
+      questions: [{ prompt: "どの機械で遊んでるかな？", options: ["パソコン", "スマホ", "タブレット"], name: "device", required: true }],
+      button_label: "次へ"
+    }, {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: `<h2>実験の進め方</h2>
+                 <p>協力してくれてありがとう！画面に2つの図形が並ぶよ。<br>スライダーの🐤を動かして、上下の線の長さを同じに見えるように合わせてね！</p>`,
+      choices: ["スタート🐤"],
+      on_finish: () => { startTime = Date.now(); }
+    }];
+
+    trials.forEach((cond, idx) => {
+      timeline.push({
+        type: jsPsychCanvasSliderResponse,
+        canvas_size: [300, 600],
+        stimulus: (c) => draw(c, 200, cond.angle, cond.feather),
+        min: 50, max: 350, step: 1, slider_start: 200,
+        button_label: "決定🐤",
+        prompt: `<div class="counter">あと ${12 - idx} 回！頑張って！</div>`,
+        data: { angle: cond.angle, feather: cond.feather },
+        on_load: function() {
+          const slider = document.querySelector('input[type=range]');
+          const canvas = document.querySelector('canvas');
+          slider.addEventListener('input', (e) => {
+            requestAnimationFrame(() => draw(canvas, e.target.value, cond.angle, cond.feather));
+          });
+        }
+      });
+    });
+
+    timeline.push({
+      type: jsPsychHtmlButtonResponse,
+      stimulus: () => {
+        const duration = Math.floor((Date.now() - startTime) / 1000);
+        return `<h2>お疲れ様！</h2><p>全部で ${duration} 秒かかったよ！</p><p>最後に「送信」ボタンを押してね。</p>`;
+      },
+      choices: ["送信する🐤"],
+      on_finish: function() {
+        const fullData = jsPsych.data.get().filter({trial_type: 'canvas-slider-response'});
+        const exportData = fullData.values().map(d => ({
+          subject_id: jsPsych.data.get().filter({trial_type: 'survey-text'}).values()[0]?.response?.subject_id,
+          angle: d.angle,
+          feather: d.feather,
+          pse: d.response
+        }));
+        fetch(GAS_URL, {
+          method: 'POST', mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(exportData)
+        });
+      }
+    });
+
+    jsPsych.run(timeline);
+  </script>
+</body>
+</html>
