@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>尚絅学院大学 2412A22の心理学者のたまご研究所🐣</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #fdf6ff;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            color: #5d4037;
+        }
+        h1, h2 {
+            font-family: 'Mochiy Pop One', sans-serif;
+        }
+        .card {
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 180px;
+        }
+
+        /* 動物アイコンの基本スタイル */
+        .animal-icon {
+            display: inline-block;
+            font-size: 3rem;
+            margin-right: 1rem;
+            transition: transform 0.5s ease;
+        }
+
+        /* 動物アニメーションの定義 */
+
+        /* くるくる回転（ひよこ） */
+        @keyframes animalRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ふわふわスイング（いぬ） */
+        @keyframes animalSwing {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px) rotate(-3deg); }
+            75% { transform: translateX(5px) rotate(3deg); }
+        }
+
+        /* ぴょんぴょんジャンプ（ねこ） */
+        @keyframes animalJump {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        /* カードホバー時にアニメーションを適用 */
+        .card:hover .animal-chick {
+            animation: animalRotate 1s ease-in-out;
+        }
+        .card:hover .animal-dog {
+            animation: animalSwing 1.5s ease-in-out infinite;
+        }
+        .card:hover .animal-cat {
+            animation: animalJump 0.8s ease-in-out infinite;
+        }
+
+        /* ボタンの制御 */
+        .action-btn {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+        .card:hover .action-btn {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* バルーンのキーフレーム */
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 0; }
+            20% { opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
+        }
+        .balloon {
+            position: absolute;
+            bottom: -50px;
+            font-size: 24px;
+            pointer-events: none;
+            opacity: 0;
+        }
+        .card:hover .balloon {
+            animation: floatUp 2s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+
+    <div class="max-w-3xl mx-auto">
+        <!-- ヘッダー -->
+        <header class="text-center mb-12">
+            <h1 class="text-3xl sm:text-4xl font-bold text-pink-400 mb-4 tracking-tight">
+                尚絅学院大学 2412A22の<br>心理学者のたまご研究所🐣
+            </h1>
+            <div class="h-2 w-24 bg-pink-200 rounded-full mx-auto mb-6"></div>
+            <p class="text-lg text-gray-600 leading-relaxed">
+                ご訪問ありがとうございます。<br>
+                以下の実験へのご協力をお願いいたします。<br>
+                各実験は数分で終わります。スマートフォンからも参加可能です。
+            </p>
+        </header>
+
+        <!-- 実験リスト -->
+        <main class="grid gap-6 md:grid-cols-1">
+            
+            <!-- 実験0 -->
+            <section class="card bg-white p-6 rounded-3xl border-4 border-pink-100 shadow-sm">
+                <div class="balloon" style="left: 20%; animation-delay: 0.1s;">🎈</div>
+                <div class="balloon" style="left: 80%; animation-delay: 0.3s;">💖</div>
+                <div class="flex items-center mb-2">
+                    <span class="animal-icon animal-chick">🐤</span>
+                    <h2 class="text-xl font-bold text-pink-500">実験0：はじめてのWebページ</h2>
+                </div>
+                <p class="text-gray-600 mb-4 ml-16">第2回で作成した記念すべき「Hello World」のページです。</p>
+                <div class="action-btn ml-16">
+                    <a href="hello_world.html" class="inline-block px-6 py-3 bg-pink-300 text-white font-bold rounded-full hover:bg-pink-400 transition-colors">
+                        Hello Worldを見る
+                    </a>
+                </div>
+            </section>
+
+            <!-- 実験1 -->
+            <section class="card bg-white p-6 rounded-3xl border-4 border-purple-100 shadow-sm">
+                <div class="balloon" style="left: 30%; animation-delay: 0.1s;">⭐</div>
+                <div class="balloon" style="left: 70%; animation-delay: 0.4s;">🎈</div>
+                <div class="flex items-center mb-2">
+                    <span class="animal-icon animal-dog">🐶</span>
+                    <h2 class="text-xl font-bold text-purple-500">実験1：ストループ課題</h2>
+                </div>
+                <p class="text-gray-600 mb-4 ml-16">「文字の意味」と「文字の色」の干渉を調べるテストです。（所要時間：約3分）</p>
+                <div class="action-btn ml-16">
+                    <a href="stroop.html" class="inline-block px-6 py-3 bg-purple-300 text-white font-bold rounded-full hover:bg-purple-400 transition-colors">
+                        実験1に参加する
+                    </a>
+                </div>
+            </section>
+
+            <!-- 実験2 -->
+            <section class="card bg-white p-6 rounded-3xl border-4 border-blue-100 shadow-sm">
+                <div class="balloon" style="left: 40%; animation-delay: 0.2s;">✨</div>
+                <div class="balloon" style="left: 60%; animation-delay: 0.5s;">💖</div>
+                <div class="flex items-center mb-2">
+                    <span class="animal-icon animal-cat">🐈</span>
+                    <h2 class="text-xl font-bold text-blue-500">実験2：ミュラー・リヤー錯視</h2>
+                </div>
+                <p class="text-gray-600 mb-4 ml-16">スライダーを使った錯視の測定テストです。（所要時間：約2分）</p>
+                <div class="action-btn ml-16">
+                    <a href="muller_lyer_final.html" class="inline-block px-6 py-3 bg-blue-300 text-white font-bold rounded-full hover:bg-blue-400 transition-colors">
+                        実験2に参加する
+                    </a>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- お楽しみ説明 -->
+        <div class="mt-12 p-6 bg-yellow-50 rounded-2xl border-2 border-yellow-200 text-center">
+            <p class="text-sm text-yellow-800 font-bold">✨ たのしい仕掛け ✨</p>
+            <p class="text-sm text-gray-600 mt-2">各カードにカーソルを合わせたり触れたりしてみてください！<br>動物たちが動き出し、バルーンが飛び出すかわいい演出が楽しめます。</p>
+        </div>
+
+        <!-- フッター -->
+        <footer class="mt-16 text-center text-sm text-gray-400">
+            &copy; 2026 尚絅学院大学 心理学者のたまご研究所 2412A22
+        </footer>
+    </div>
+
+</body>
+</html>
