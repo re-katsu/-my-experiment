@@ -24,15 +24,15 @@
     }
     .jspsych-content { 
       max-width: 500px; width: 100%; padding: 20px; 
-      background: rgba(255, 255, 255, 0.95); 
-      border-radius: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
+      background: linear-gradient(135deg, #f0f9ff, #b9e9f9);
+      border-radius: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); 
       text-align: center;
       box-sizing: border-box;
     }
     canvas { 
       border: 3px solid #f59e0b; background: white; 
-      margin: 15px auto; border-radius: 15px;
-      width: 100%; max-width: 350px; height: auto;
+      margin: 10px auto; border-radius: 15px;
+      width: 100%; max-width: 280px; height: auto;
       display: block;
     }
     .jspsych-btn { 
@@ -41,17 +41,15 @@
       margin: 10px; width: 80%;
     }
     
-    /* スマホ対応：スライダーつまみの完全リセットと幅の制限 */
     input[type=range] { 
-      -webkit-appearance: none; 
-      width: 85%; 
-      max-width: 350px; 
-      background: transparent; 
-      margin: 20px auto;
-      display: block;
+      -webkit-appearance: none; width: 80%; max-width: 280px; 
+      background: transparent; margin: 15px auto; display: block; cursor: pointer;
     }
     input[type=range]::-webkit-slider-runnable-track {
-      width: 100%; height: 10px; background: #fbbf24; border-radius: 5px;
+      width: 100%; height: 10px; 
+      /* パステルグリーン系のグラデーションに変更 */
+      background: linear-gradient(to right, #dcfce7, #4ade80);
+      border-radius: 5px;
     }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
@@ -61,10 +59,8 @@
       border: none !important;
       outline: none !important;
       box-shadow: none !important;
-      cursor: pointer;
       margin-top: -20px;
     }
-    
     .float-icon { animation: float 2s ease-in-out infinite; display: inline-block; }
     @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
   </style>
@@ -77,34 +73,31 @@
     const jsPsych = initJsPsych({
       display_element: 'jspsych-target',
       on_finish: () => {
-        document.getElementById('jspsych-target').innerHTML = '<div class="jspsych-content"><h2>送信完了！</h2><p>ありがとう🐤またね！</p></div>';
+        document.getElementById('jspsych-target').innerHTML = '<div class="jspsych-content"><h2>送信完了！</h2><p>ありがとう🐤<br>自動的にデータが送られました。</p></div>';
       }
     });
 
-    let startTime;
-
     function draw(c, length, angle, f_len) {
       const ctx = c.getContext('2d');
-      // キャンバスの大きさを動的に調整
-      const dpr = window.devicePixelRatio || 1;
       ctx.clearRect(0, 0, c.width, c.height);
       const centerX = c.width / 2;
       const angleRad = (angle * Math.PI) / 180;
       
       const drawLine = (y, len, inward) => {
         ctx.beginPath();
-        ctx.strokeStyle = '#374151'; ctx.lineWidth = 4;
+        ctx.strokeStyle = '#374151'; ctx.lineWidth = 3;
         ctx.lineCap = 'round';
         ctx.moveTo(centerX - len/2, y); ctx.lineTo(centerX + len/2, y);
         const dir = inward ? 1 : -1;
-        ctx.moveTo(centerX - len/2, y); ctx.lineTo(centerX - len/2 + f_len * Math.cos(angleRad) * dir, y - f_len * Math.sin(angleRad));
-        ctx.moveTo(centerX - len/2, y); ctx.lineTo(centerX - len/2 + f_len * Math.cos(angleRad) * dir, y + f_len * Math.sin(angleRad));
-        ctx.moveTo(centerX + len/2, y); ctx.lineTo(centerX + len/2 - f_len * Math.cos(angleRad) * dir, y - f_len * Math.sin(angleRad));
-        ctx.moveTo(centerX + len/2, y); ctx.lineTo(centerX + len/2 - f_len * Math.cos(angleRad) * dir, y + f_len * Math.sin(angleRad));
+        const f = Math.min(f_len, len * 0.25);
+        ctx.moveTo(centerX - len/2, y); ctx.lineTo(centerX - len/2 + f * Math.cos(angleRad) * dir, y - f * Math.sin(angleRad));
+        ctx.moveTo(centerX - len/2, y); ctx.lineTo(centerX - len/2 + f * Math.cos(angleRad) * dir, y + f * Math.sin(angleRad));
+        ctx.moveTo(centerX + len/2, y); ctx.lineTo(centerX + len/2 - f * Math.cos(angleRad) * dir, y - f * Math.sin(angleRad));
+        ctx.moveTo(centerX + len/2, y); ctx.lineTo(centerX + len/2 - f * Math.cos(angleRad) * dir, y + f * Math.sin(angleRad));
         ctx.stroke();
       };
-      drawLine(90, 200, true);
-      drawLine(210, length, false);
+      drawLine(80, 120, true);
+      drawLine(180, length, false);
     }
 
     const trials = jsPsych.randomization.shuffle([
@@ -122,17 +115,16 @@
       button_label: "次へ"
     }, {
       type: jsPsychHtmlButtonResponse,
-      stimulus: `<h3>実験スタート！</h3><p>スライダーの🐤を動かして、下の線を上の線と同じ長さに合わせてね！</p>`,
-      choices: ["スタート🐤"],
-      on_finish: () => { startTime = Date.now(); }
+      stimulus: `<h3>実験スタート！</h3><p>スライダーで下の線を上の線と同じ長さに合わせてね！</p>`,
+      choices: ["スタート🐤"]
     }];
 
     trials.forEach((cond, idx) => {
       timeline.push({
         type: jsPsychCanvasSliderResponse,
-        canvas_size: [300, 400],
-        stimulus: (c) => draw(c, 200, cond.angle, cond.feather),
-        min: 50, max: 350, step: 1, slider_start: 200,
+        canvas_size: [260, 300],
+        stimulus: (c) => draw(c, 120, cond.angle, cond.feather),
+        min: 40, max: 200, step: 1, slider_start: 120,
         button_label: "決定🐤",
         prompt: `<p>あと ${12 - idx} 回！</p>`,
         on_load: function() {
@@ -145,8 +137,9 @@
 
     timeline.push({
       type: jsPsychHtmlButtonResponse,
-      stimulus: () => `<h2>お疲れ様！</h2><p>${Math.floor((Date.now() - startTime)/1000)} 秒かかったよ！</p>`,
-      choices: ["送信する🐤"],
+      stimulus: "<h2>完了！</h2><p>データを送信中...</p>",
+      choices: [],
+      trial_duration: 1000,
       on_finish: function() {
         const d = jsPsych.data.get().filter({trial_type: 'canvas-slider-response'}).values();
         fetch(GAS_URL, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(d) });
