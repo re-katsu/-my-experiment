@@ -11,38 +11,40 @@
   <link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.1/css/jspsych.css">
 
   <style>
-    body { background-color: #f8fafc; font-family: "Helvetica Neue", Arial, sans-serif; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; padding-top: 40px; }
-    .jspsych-content { max-width: 800px; padding: 40px; background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 95%; }
-    canvas { border: 1px solid #e2e8f0; background: white; display: block; margin: 20px auto; border-radius: 8px; }
+    body { background-color: #f8fafc; font-family: "Helvetica Neue", Arial, sans-serif; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; padding-top: 20px; }
+    .jspsych-content { max-width: 800px; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); width: 95%; }
+    canvas { border: 1px solid #e2e8f0; background: white; display: block; margin: 15px auto; border-radius: 8px; }
     
-    .cat-wrapper { text-align: center; margin-bottom: 20px; padding-top: 10px; }
-    .cat-icon { font-size: 60px; display: block; margin: 0 auto 15px; }
-
-    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; cursor: pointer; }
-    input[type=range]:focus { outline: none; }
+    .jspsych-survey-multi-choice-option { display: inline-block; margin-right: 20px; }
     
-    /* Slider track */
-    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; }
-    
-    /* Star Slider thumb */
+    /* スライダーのつまみを星形にする */
+    input[type=range] { width: 100%; height: 40px; cursor: pointer; }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      height: 35px;
+      appearance: none;
       width: 35px;
+      height: 35px;
       background: #f59e0b;
-      margin-top: -14px; /* Centers the thumb on the track */
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      cursor: pointer;
     }
 
-    h2 { margin: 10px 0; color: #1e293b; }
-    p { margin: 5px 0 20px 0; color: #475569; }
-    .report-header { background: #dcfce7; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 25px; }
+    /* 調整値表示のスタイル */
+    #adjustment-value {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    h2 { margin: 10px 0; }
+    p { margin: 5px 0 15px 0; }
+    .report-header { background: #dcfce7; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
     .report-title { color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 5px; margin-bottom: 15px; }
     .results-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    .results-table th, .results-table td { padding: 12px; text-align: center; border: 1px solid #e2e8f0; }
-    .jspsych-btn { font-size: 16px; padding: 10px 25px; border-radius: 8px; background: #3b82f6; color: white; border: none; cursor: pointer; }
-    .jspsych-btn:hover { background: #2563eb; }
+    .results-table th, .results-table td { padding: 8px; text-align: center; border: 1px solid #e2e8f0; }
+    .jspsych-btn { font-size: 15px; padding: 10px 25px; }
+    .cat-wrapper { text-align: center; margin: 20px 0; }
+    .cat-icon { font-size: 80px; display: block; }
   </style>
 </head>
 <body>
@@ -53,19 +55,21 @@
     const jsPsych = initJsPsych({
       display_element: 'jspsych-target',
       on_finish: function() {
-        const fullData = jsPsych.data.get().filter({trial_type: 'canvas-slider-response'});
+        // 収集したデータを加工して送信
+        const allData = jsPsych.data.get();
+        const trials = allData.filter({trial_type: 'canvas-slider-response'}).values();
         
-        // Data processing for submission
-        const subject_data = jsPsych.data.get().filter({trial_type: 'survey-text'}).values()[0] || {};
-        const device_data = jsPsych.data.get().filter({trial_type: 'survey-multi-choice'}).values()[0] || {};
-        
-        const subject_id = subject_data.response?.subject_id || "unknown";
-        const device_type = device_data.response?.device || "unknown";
+        // グローバル保存したプロパティを取得
+        const firstTrial = allData.values()[0];
+        const subject_id = firstTrial.subject_id || "unknown";
+        const device_type = firstTrial.device || "unknown";
         
         const total_time_ms = jsPsych.getTotalTime();
-        const time_str = `${Math.floor(total_time_ms / 60000)}分${Math.floor((total_time_ms % 60000) / 1000)}秒`;
+        const mins = Math.floor(total_time_ms / 60000);
+        const secs = Math.floor((total_time_ms % 60000) / 1000);
+        const time_str = `${mins}分${secs}秒`;
         
-        const exportData = fullData.values().map(d => ({
+        const exportData = trials.map(d => ({
           subject_id: subject_id,
           device: device_type,
           total_duration: time_str,
@@ -83,13 +87,14 @@
           </div>`;
 
         fetch(GAS_URL, {
-          method: 'POST', mode: 'no-cors',
+          method: 'POST',
+          mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(exportData)
         }).then(() => {
-          showFinalReport(subject_id, fullData.values(), time_str);
+          showFinalReport(subject_id, trials, time_str);
         }).catch(err => {
-          document.getElementById('jspsych-target').innerHTML = `<div class="jspsych-content"><p style="color:red;">送信に失敗しました: ${err.message}</p></div>`;
+          document.getElementById('jspsych-target').innerHTML = `<div class="jspsych-content"><p style="color:red;">送信エラー: ${err.message}</p></div>`;
         });
       }
     });
@@ -100,7 +105,7 @@
         <div class="jspsych-content">
           <div class="report-header">
             <h2 style="margin:0;">✨ 実験終了！ご協力ありがとうございました ✨</h2>
-            <p>所要時間: ${time}</p>
+            <p>今回の所要時間: ${time}</p>
           </div>
           <h2 class="report-title">実験結果 (ID: ${subject_id})</h2>
           <table class="results-table">
@@ -121,7 +126,6 @@
       ctx.clearRect(0, 0, c.width, c.height);
       const centerX = c.width / 2;
       const angleRad = (angle * Math.PI) / 180;
-      
       const drawLine = (y, len, inward) => {
         ctx.beginPath();
         ctx.moveTo(centerX - len/2, y); ctx.lineTo(centerX + len/2, y);
@@ -133,8 +137,8 @@
         ctx.stroke();
       };
       ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
-      drawLine(90, 200, true);
-      drawLine(210, length, false);
+      drawLine(100, 200, true);
+      drawLine(220, length, false);
     }
 
     const trials = jsPsych.randomization.shuffle([
@@ -149,11 +153,13 @@
         name: "subject_id", 
         required: true 
       }],
-      button_label: "次へ"
+      button_label: "次へ",
+      on_finish: (data) => { jsPsych.data.addProperties({subject_id: data.response.subject_id}); }
     }, {
       type: jsPsychSurveyMultiChoice,
       questions: [{ prompt: "<strong>使用機材を選択してください</strong>", options: ["パソコン", "スマホ", "タブレット"], name: "device", required: true }],
-      button_label: "次へ"
+      button_label: "次へ",
+      on_finish: (data) => { jsPsych.data.addProperties({device: data.response.device}); }
     }, {
       type: jsPsychHtmlButtonResponse,
       stimulus: "<h2>実験開始</h2><p>下の線を調整して、上の線と同じ長さに見えるようにしてください。</p>",
@@ -163,16 +169,20 @@
     trials.forEach((cond, idx) => {
       timeline.push({
         type: jsPsychCanvasSliderResponse,
-        canvas_size: [300, 600],
+        canvas_size: [350, 600],
         stimulus: (c) => draw(c, 200, cond.angle, cond.feather),
         min: 50, max: 350, step: 1, slider_start: 200,
-        button_label: "決定",
+        button_label: "次へ",
         prompt: `<p>試行 ${idx + 1} / 12</p>`,
         data: { angle: cond.angle, feather: cond.feather },
         on_load: function() {
           const slider = document.querySelector('input[type=range]');
           const canvas = document.querySelector('canvas');
-          slider.oninput = (e) => draw(canvas, e.target.value, cond.angle, cond.feather);
+          
+          slider.oninput = (e) => {
+            const currentValue = e.target.value;
+            draw(canvas, currentValue, cond.angle, cond.feather);
+          };
         }
       });
     });
