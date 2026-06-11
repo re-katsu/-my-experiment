@@ -7,31 +7,21 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #fdf6ff;
-            font-family: 'Zen Maru Gothic', sans-serif;
-            color: #5d4037;
-        }
-        h1, h2 {
-            font-family: 'Mochiy Pop One', sans-serif;
-        }
-        .card {
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-            min-height: 180px;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
+        body { background-color: #fff9f0; font-family: 'Zen Maru Gothic', sans-serif; color: #5d4037; position: relative; overflow-x: hidden; }
+        
+        .star-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+        .star { position: absolute; color: #f59e0b; animation: fall linear infinite; }
+        @keyframes fall { 0% { transform: translateY(-10px); } 100% { transform: translateY(100vh); } }
 
-        .animal-icon {
-            display: inline-block;
-            font-size: 3rem;
-            margin-right: 1rem;
-            transition: transform 0.5s ease;
-        }
+        h1, h2 { font-family: 'Mochiy Pop One', sans-serif; }
+        
+        /* カード全体の高さを固定してレイアウト崩れを防ぐ */
+        .card { transition: all 0.5s ease; position: relative; overflow: hidden; min-height: 220px; cursor: pointer; background: rgba(255, 255, 255, 0.9); display: flex; flex-direction: column; }
+        .card.active { background-color: #1f2937 !important; color: #ffffff !important; }
+        .card.active h2 { color: #fce4ec !important; }
+        .card.active p { color: #e5e7eb !important; }
 
-        /* アニメーション */
+        .animal-icon { display: inline-block; font-size: 3rem; margin-right: 1rem; transition: transform 0.5s ease; }
         @keyframes animalRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes animalSwing { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-3deg); } 75% { transform: translateX(5px) rotate(3deg); } }
         @keyframes animalJump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
@@ -40,102 +30,90 @@
         .card:hover .animal-dog, .card.active .animal-dog { animation: animalSwing 1.5s ease-in-out infinite; }
         .card:hover .animal-cat, .card.active .animal-cat { animation: animalJump 0.8s ease-in-out infinite; }
 
-        .action-btn, .balloon {
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-        .card:hover .action-btn, .card.active .action-btn { opacity: 1; visibility: visible; transform: translateY(0); }
-        .card:hover .balloon, .card.active .balloon {
-            opacity: 0.8;
-            visibility: visible;
-            animation: floatUp 2s ease-out forwards;
-        }
+        /* ボタンを絶対配置にすることでレイアウトに影響しないようにする */
+        .action-container { position: absolute; bottom: 20px; left: 64px; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .card:hover .action-container, .card.active .action-container { opacity: 1; visibility: visible; }
+        
+        .typing-container { min-height: 3em; }
+        .typing { display: inline-block; overflow: hidden; white-space: nowrap; width: 0; border-right: .15em solid transparent; }
+        .card.active .typing { animation: typing 2s steps(40, end) forwards; border-right: .15em solid #fce4ec; }
+        @keyframes typing { from { width: 0 } to { width: 100% } }
 
-        @keyframes floatUp {
-            0% { transform: translateY(0); opacity: 0; }
-            20% { opacity: 1; }
-            100% { transform: translateY(-100px); opacity: 0; }
-        }
+        #zoom-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; }
+        #zoom-animal { font-size: 10rem; animation: zoomIn 0.8s ease-out; }
+        @keyframes zoomIn { 0% { transform: scale(0.2); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
-<body class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+<body class="py-12 px-4 sm:px-6 lg:px-8">
 
-    <div class="max-w-3xl mx-auto">
+    <div class="star-bg" id="star-container"></div>
+    <div id="zoom-overlay" onclick="this.style.display='none'">
+        <div id="zoom-animal"></div>
+        <p class="text-white mt-4 text-2xl font-bold">実験へ移動します...</p>
+    </div>
+
+    <script>
+        const container = document.getElementById('star-container');
+        for (let i = 0; i < 30; i++) {
+            const star = document.createElement('div');
+            star.innerHTML = '★'; star.className = 'star';
+            star.style.left = Math.random() * 100 + 'vw';
+            star.style.fontSize = (Math.random() * 15 + 10) + 'px';
+            star.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            star.style.animationDelay = Math.random() * 5 + 's';
+            star.style.opacity = Math.random() * 0.5 + 0.3;
+            container.appendChild(star);
+        }
+
+        function triggerZoom(emoji, url) {
+            if (!url || url === '#') return;
+            const overlay = document.getElementById('zoom-overlay');
+            document.getElementById('zoom-animal').innerHTML = emoji;
+            overlay.style.display = 'flex';
+            setTimeout(() => { window.location.href = url; }, 1500);
+        }
+    </script>
+
+    <div class="max-w-3xl mx-auto relative z-10">
         <header class="text-center mb-12">
             <h1 class="text-3xl sm:text-4xl font-bold text-pink-400 mb-4 tracking-tight">
                 尚絅学院大学 2412A22の<br>心理学者のたまご研究所🐣
             </h1>
-            <div class="h-2 w-24 bg-pink-200 rounded-full mx-auto mb-6"></div>
-            <p class="text-lg text-gray-600 leading-relaxed">
-                ご訪問ありがとうございます。<br>
-                以下の実験へのご協力をお願いいたします。<br>
-                各実験は数分で終わります。スマートフォンからも参加可能です。
-            </p>
         </header>
 
-        <main class="grid gap-6 md:grid-cols-1">
-            <!-- 実験カード共通のイベント設定 -->
-            <section class="card bg-white p-6 rounded-3xl border-4 border-pink-100 shadow-sm" 
-                     ontouchstart="this.classList.add('active')" 
-                     ontouchend="this.classList.remove('active')">
-                <div class="balloon absolute bottom-0 left-[20%]" style="animation-delay: 0.1s;">🎈</div>
-                <div class="balloon absolute bottom-0 left-[80%]" style="animation-delay: 0.3s;">💖</div>
-                <div class="flex items-center mb-2">
-                    <span class="animal-icon animal-chick">🐤</span>
-                    <h2 class="text-xl font-bold text-pink-500">実験0：はじめてのWebページ</h2>
-                </div>
-                <p class="text-gray-600 mb-4 ml-0 sm:ml-16">第2回で作成した記念すべき「Hello World」のページです。</p>
-                <div class="action-btn ml-0 sm:ml-16">
-                    <a href="hello_world.html" class="inline-block px-6 py-3 bg-pink-300 text-white font-bold rounded-full hover:bg-pink-400 transition-colors">
-                        Hello Worldを見る
-                    </a>
+        <main class="grid gap-6">
+            <section class="card p-6 rounded-3xl border-4 border-pink-100 shadow-sm" 
+                     onmouseover="this.classList.add('active')" onmouseout="this.classList.remove('active')"
+                     ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                <div class="flex items-center mb-2"><span class="animal-icon animal-chick">🐤</span><h2 class="text-xl font-bold">実験0：はじめてのWebページ</h2></div>
+                <div class="typing-container ml-16"><p class="typing">第2回で作成した記念すべき「Hello World」のページです。</p></div>
+                <div class="action-container">
+                    <button onclick="triggerZoom('🐤', 'hello_world.html')" class="px-6 py-3 bg-pink-300 text-white font-bold rounded-full">実験0へ進む</button>
                 </div>
             </section>
 
-            <section class="card bg-white p-6 rounded-3xl border-4 border-purple-100 shadow-sm" 
-                     ontouchstart="this.classList.add('active')" 
-                     ontouchend="this.classList.remove('active')">
-                <div class="balloon absolute bottom-0 left-[30%]" style="animation-delay: 0.1s;">⭐</div>
-                <div class="balloon absolute bottom-0 left-[70%]" style="animation-delay: 0.4s;">🎈</div>
-                <div class="flex items-center mb-2">
-                    <span class="animal-icon animal-dog">🐶</span>
-                    <h2 class="text-xl font-bold text-purple-500">実験1：ストループ課題</h2>
-                </div>
-                <p class="text-gray-600 mb-4 ml-0 sm:ml-16">「文字の意味」と「文字の色」の干渉を調べるテストです。（所要時間：約3分）</p>
-                <div class="action-btn ml-0 sm:ml-16">
-                    <a href="stroop.html" class="inline-block px-6 py-3 bg-purple-300 text-white font-bold rounded-full hover:bg-purple-400 transition-colors">
-                        実験1に参加する
-                    </a>
+            <section class="card p-6 rounded-3xl border-4 border-purple-100 shadow-sm" 
+                     onmouseover="this.classList.add('active')" onmouseout="this.classList.remove('active')"
+                     ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                <div class="flex items-center mb-2"><span class="animal-icon animal-dog">🐶</span><h2 class="text-xl font-bold">実験1：ストループ課題</h2></div>
+                <div class="typing-container ml-16"><p class="typing">文字の意味と色が違うとき、脳はどう反応するでしょうか？</p></div>
+                <div class="action-container">
+                    <button onclick="triggerZoom('🐶', 'stroop.html')" class="px-6 py-3 bg-purple-300 text-white font-bold rounded-full">実験1へ進む</button>
                 </div>
             </section>
 
-            <section class="card bg-white p-6 rounded-3xl border-4 border-blue-100 shadow-sm" 
-                     ontouchstart="this.classList.add('active')" 
-                     ontouchend="this.classList.remove('active')">
-                <div class="balloon absolute bottom-0 left-[40%]" style="animation-delay: 0.2s;">✨</div>
-                <div class="balloon absolute bottom-0 left-[60%]" style="animation-delay: 0.5s;">💖</div>
-                <div class="flex items-center mb-2">
-                    <span class="animal-icon animal-cat">🐈</span>
-                    <h2 class="text-xl font-bold text-blue-500">実験2：ミュラー・リヤー錯視</h2>
-                </div>
-                <p class="text-gray-600 mb-4 ml-0 sm:ml-16">スライダーを使った錯視の測定テストです。（所要時間：約2分）</p>
-                <div class="action-btn ml-0 sm:ml-16">
-                    <a href="muller_lyer_final.html" class="inline-block px-6 py-3 bg-blue-300 text-white font-bold rounded-full hover:bg-blue-400 transition-colors">
-                        実験2に参加する
-                    </a>
+            <section class="card p-6 rounded-3xl border-4 border-blue-100 shadow-sm" 
+                     onmouseover="this.classList.add('active')" onmouseout="this.classList.remove('active')"
+                     ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                <div class="flex items-center mb-2"><span class="animal-icon animal-cat">🐈</span><h2 class="text-xl font-bold">実験2：ミュラー・リヤー錯視</h2></div>
+                <div class="typing-container ml-16"><p class="typing">同じ長さの線なのに、なぜ違って見えるのかを探ります。</p></div>
+                <div class="action-container">
+                    <button onclick="triggerZoom('🐈', 'muller_lyer_final.html')" class="px-6 py-3 bg-blue-300 text-white font-bold rounded-full">実験2へ進む</button>
                 </div>
             </section>
         </main>
 
-        <div class="mt-12 p-6 bg-yellow-50 rounded-2xl border-2 border-yellow-200 text-center">
-            <p class="text-sm text-yellow-800 font-bold">✨ たのしい仕掛け ✨</p>
-            <p class="text-sm text-gray-600 mt-2">PCではカーソルを合わせるか、スマホではカードを触れ続けてみてください！<br>動物たちが動き出し、バルーンが飛び出すかわいい演出が楽しめます。</p>
-        </div>
-
-        <footer class="mt-16 text-center text-sm text-gray-400">
-            &copy; 2026 尚絅学院大学 心理学者のたまご研究所 2412A22
-        </footer>
+        <footer class="mt-16 text-center text-sm text-gray-400">&copy; 2026 尚絅学院大学 心理学者のたまご研究所 2412A22</footer>
     </div>
 </body>
 </html>
