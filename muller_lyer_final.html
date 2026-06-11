@@ -47,7 +47,6 @@
     }
     input[type=range]::-webkit-slider-runnable-track {
       width: 100%; height: 10px; 
-      /* パステルグリーン系のグラデーションに変更 */
       background: linear-gradient(to right, #dcfce7, #4ade80);
       border-radius: 5px;
     }
@@ -77,25 +76,32 @@
       }
     });
 
+    // 羽のサイズを固定にするための変更
     function draw(c, length, angle, f_len) {
       const ctx = c.getContext('2d');
       ctx.clearRect(0, 0, c.width, c.height);
       const centerX = c.width / 2;
       const angleRad = (angle * Math.PI) / 180;
       
+      // 羽のサイズは固定（f_len をそのまま使う）
+      const f = f_len; 
+      
       const drawLine = (y, len, inward) => {
         ctx.beginPath();
         ctx.strokeStyle = '#374151'; ctx.lineWidth = 3;
         ctx.lineCap = 'round';
+        // 中央の線
         ctx.moveTo(centerX - len/2, y); ctx.lineTo(centerX + len/2, y);
+        
         const dir = inward ? 1 : -1;
-        const f = Math.min(f_len, len * 0.25);
+        // 羽の部分（固定サイズ）
         ctx.moveTo(centerX - len/2, y); ctx.lineTo(centerX - len/2 + f * Math.cos(angleRad) * dir, y - f * Math.sin(angleRad));
         ctx.moveTo(centerX - len/2, y); ctx.lineTo(centerX - len/2 + f * Math.cos(angleRad) * dir, y + f * Math.sin(angleRad));
         ctx.moveTo(centerX + len/2, y); ctx.lineTo(centerX + len/2 - f * Math.cos(angleRad) * dir, y - f * Math.sin(angleRad));
         ctx.moveTo(centerX + len/2, y); ctx.lineTo(centerX + len/2 - f * Math.cos(angleRad) * dir, y + f * Math.sin(angleRad));
         ctx.stroke();
       };
+      // 固定長120の線と、可変長の線を分ける
       drawLine(80, 120, true);
       drawLine(180, length, false);
     }
