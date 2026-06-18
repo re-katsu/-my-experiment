@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1-Back & 2-Back ワーキングメモリ実験</title>
+    <script src="https://unpkg.com/jspsych@7.3.3"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-text@1.1.2"></script>
+    <link href="https://unpkg.com/jspsych@7.3.3/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <style>
+        body { 
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif; 
+            background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%); 
+            min-height: 100vh; color: #2d3436; 
+        }
+        .jspsych-content { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .jspsych-btn { 
+            padding: 20px 40px; font-size: 1.5rem; margin: 15px; cursor: pointer; 
+            transition: all 0.2s; border-radius: 50px; border: none; font-weight: bold;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+        .jspsych-btn:active { transform: translateY(4px); }
+        .stimulus { font-size: 140px; font-weight: 800; height: 180px; margin: 30px 0; color: #2d3436; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
+        .guide { color: #636e72; font-size: 1.3rem; margin-bottom: 20px; font-weight: bold; }
+        .instruction-box { text-align: left; background: #fdfdfd; padding: 25px; border-left: 8px solid #6c5ce7; border-radius: 10px; margin: 20px 0; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; background: white; }
+        th, td { border: 1px solid #dfe6e9; padding: 12px; text-align: center; }
+        th { background-color: #f1f2f6; }
+    </style>
+</head>
+<body></body>
+<script>
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbzMp6-fuL411CQlWB5IRvw-TXQkxa4Oo7SVrN09dyJK18imiIkFf7aRn_fb3mnUn_uk/exec';
+
+    const jsPsych = initJsPsych({
+        on_finish: (data) => {
+            const displayElement = jsPsych.getDisplayElement();
+            displayElement.innerHTML = "<h2>データを送信中です...</h2>";
+
+            const experimentData = jsPsych.data.get()
+                .filterCustom(d => d.block === '1-back' || d.block === '2-back')
+                .values();
+
+            let tableHtml = "<h2>実験結果</h2><table><tr><th>条件</th><th>試行</th><th>正誤</th><th>反応時間(ms)</th></tr>";
+            experimentData.forEach(d => {
+                const choice = d.response === 0 ? true : (d.response === 1 ? false : null);
+                const correct = (d.isTarget !== undefined && choice !== null) ? ((d.isTarget && choice === true) || (!d.isTarget && choice === false)) : null;
+                tableHtml += `<tr><td>${d.block}</td><td>${d.index + 1}</td><td>${correct !== null ? (correct ? '○' : '×') : '-'}</td><td>${d.rt ? Math.round(d.rt) : '-'}</td></tr>`;
+            });
+            tableHtml += "</table>";
+
+            fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(experimentData)
+            })
+            .then(() => { displayElement.innerHTML = "<h2>実験終了。ご協力ありがとうございました。</h2>" + tableHtml; })
+            .catch(() => { displayElement.innerHTML = "<h2>終了しました</h2>" + tableHtml; });
+        }
+    });
+
+    function playSound(text) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.8;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    const participant_info = {
+        type: jsPsychSurveyText,
+        questions: [{ prompt: "参加者IDを入力してください", name: 'pid', required: true }],
+        on_finish: (data) => { jsPsych.data.addProperties({ participant_id: data.response.pid }); }
+    };
+
+    function generateSequence(nback) {
+        const letters = ['A', 'B', 'C', 'D', 'E'];
+        let seq = [];
+        for(let i=0; i<nback; i++) seq.push(letters[Math.floor(Math.random() * letters.length)]);
+        let neededTargets = 6;
+        let trialsLeft = 20 - nback;
+        for (let i = nback; i < 20; i++) {
+            let mustBeTarget = (neededTargets > 0 && neededTargets === trialsLeft);
+            if (neededTargets > 0 && (mustBeTarget || (Math.random() < 0.35))) {
+                seq.push(seq[i - nback]);
+                neededTargets--;
+            } else {
+                let next;
+                do { next = letters[Math.floor(Math.random() * letters.length)]; } while (next === seq[i - nback]);
+                seq.push(next);
+            }
+            trialsLeft--;
+        }
+        return seq;
+    }
+
+    function createBlock(nback, blockName) {
+        const sequence = generateSequence(nback);
+        return sequence.map((letter, index) => ({
+            type: jsPsychHtmlButtonResponse,
+            stimulus: `<div class="guide">${nback}-Back課題: 第${index + 1}問 / 全20問</div><div class="stimulus">${letter}</div>`,
+            choices: ['同じ (Fキー)', '違う (Jキー)'],
+            button_html: [
+                '<button class="jspsych-btn" style="background:#00b894; color:white;">同じ (F)</button>', 
+                '<button class="jspsych-btn" style="background:#d63031; color:white;">違う (J)</button>'
+            ],
+            response_ends_trial: false,
+            trial_duration: 2000,
+            data: { block: blockName, index: index, letter: letter, isTarget: index >= nback && letter === sequence[index - nback] },
+            on_load: function() {
+                const startTime = performance.now();
+                const buttons = document.querySelectorAll('.jspsych-btn');
+                let answered = false;
+
+                const handle = (idx) => {
+                    if (answered) return;
+                    answered = true;
+                    const rt = performance.now() - startTime;
+                    jsPsych.data.addDataToLastTrial({response: idx, rt: rt});
+                    idx === 0 ? playSound("わんっ") : playSound("にゃーん");
+                    buttons[idx].style.transform = "scale(0.9)";
+                    buttons[idx].style.opacity = "0.7";
+                };
+
+                buttons.forEach((b, i) => b.addEventListener('click', () => handle(i)));
+                const keyListener = (e) => {
+                    if (e.key === 'f') handle(0);
+                    else if (e.key === 'j') handle(1);
+                };
+                window.addEventListener('keydown', keyListener);
+                this.keyListener = keyListener;
+            },
+            on_finish: function() { window.removeEventListener('keydown', this.keyListener); }
+        }));
+    }
+
+    const instructions = (nback) => ({
+        type: jsPsychHtmlButtonResponse,
+        stimulus: `<h2>${nback}-Back課題を開始します</h2>` +
+                  `<div class="instruction-box">` +
+                  `<strong>ルール：</strong>今出ている文字と、<strong>${nback}つ前の文字</strong>を比べてください。<br>` +
+                  `<ul><li>同じなら：<strong>「同じ」ボタン</strong> または <strong>Fキー</strong></li>` +
+                  `<li>違うなら：<strong>「違う」ボタン</strong> または <strong>Jキー</strong></li></ul>` +
+                  `</div><p>テンポよく答えてくださいね！</p>`,
+        choices: ['開始']
+    });
+
+    jsPsych.run([participant_info, 
+        instructions(1), ...createBlock(1, '1-back'),
+        {type: jsPsychHtmlButtonResponse, stimulus: "<h2>休憩タイム</h2><p>少し深呼吸してください。次は2つ前の文字を記憶する課題です。</p>", choices: ['開始']}, 
+        instructions(2), ...createBlock(2, '2-back')
+    ]);
+</script>
+</html>
