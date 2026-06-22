@@ -3,30 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1-Back & 2-Back ワーキングメモリ実験</title>
+    <title>まもり記憶ゲーム</title>
+    <!-- ゆるふわな丸文字フォント -->
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/jspsych@7.3.3"></script>
     <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.2"></script>
     <script src="https://unpkg.com/@jspsych/plugin-survey-text@1.1.2"></script>
     <link href="https://unpkg.com/jspsych@7.3.3/css/jspsych.css" rel="stylesheet" type="text/css" />
     <style>
         body { 
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif; 
-            background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%); 
-            min-height: 100vh; color: #2d3436; 
+            font-family: 'M PLUS Rounded 1c', sans-serif; 
+            background: linear-gradient(145deg, #fdfcfb 0%, #e2d1c3 100%); 
+            min-height: 100vh; color: #7d6b6b; 
         }
-        .jspsych-content { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .jspsych-content { 
+            background: rgba(255, 255, 255, 0.85); 
+            padding: 60px; 
+            border-radius: 60px; 
+            box-shadow: 0 15px 35px rgba(255, 182, 193, 0.3); 
+            border: 6px solid #fff;
+        }
         .jspsych-btn { 
-            padding: 20px 40px; font-size: 1.5rem; margin: 15px; cursor: pointer; 
-            transition: all 0.2s; border-radius: 50px; border: none; font-weight: bold;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            padding: 25px 45px; font-size: 1.3rem; margin: 15px; cursor: pointer; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            border-radius: 40px; border: none; font-weight: 700;
+            background: #ffecf2; color: #ff85a2;
+            box-shadow: 0 6px 0 #ffd6de;
         }
-        .jspsych-btn:active { transform: translateY(4px); }
-        .stimulus { font-size: 140px; font-weight: 800; height: 180px; margin: 30px 0; color: #2d3436; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
-        .guide { color: #636e72; font-size: 1.3rem; margin-bottom: 20px; font-weight: bold; }
-        .instruction-box { text-align: left; background: #fdfdfd; padding: 25px; border-left: 8px solid #6c5ce7; border-radius: 10px; margin: 20px 0; }
-        table { border-collapse: collapse; width: 100%; margin: 20px 0; background: white; }
-        th, td { border: 1px solid #dfe6e9; padding: 12px; text-align: center; }
-        th { background-color: #f1f2f6; }
+        .jspsych-btn:hover { transform: translateY(-5px); box-shadow: 0 10px 0 #ffc2cd; }
+        .jspsych-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #ffd6de; }
+        
+        .stimulus { font-size: 120px; font-weight: 900; height: 160px; margin: 40px 0; color: #ff85a2; }
+        .guide { color: #a89494; font-size: 1.2rem; margin-bottom: 20px; font-weight: 700; background: #fff5f7; padding: 15px 30px; border-radius: 30px; display: inline-block; }
+        .instruction-box { text-align: left; background: #fffaf0; padding: 35px; border-radius: 40px; margin: 30px 0; border: 3px solid #ffe4e1; }
+        
+        input[type="text"] { border-radius: 30px !important; padding: 20px !important; border: 3px solid #ffd6de !important; text-align: center; font-size: 1.3rem !important; color: #7d6b6b; }
+        h1, h2 { color: #ff85a2; font-weight: 900; }
+        table { border-collapse: separate; border-spacing: 0 10px; width: 100%; }
+        th { background: #ffe4e1; color: #d68989; padding: 15px; border-radius: 15px; }
+        td { background: #fffdfd; padding: 15px; border-top: 1px solid #ffd6de; border-bottom: 1px solid #ffd6de; }
     </style>
 </head>
 <body></body>
@@ -36,40 +51,43 @@
     const jsPsych = initJsPsych({
         on_finish: (data) => {
             const displayElement = jsPsych.getDisplayElement();
-            displayElement.innerHTML = "<h2>データを送信中です...</h2>";
+            displayElement.innerHTML = "<h2 style='text-align:center;'>💌 お手紙をおくっているよ...</h2>";
 
             const experimentData = jsPsych.data.get()
                 .filterCustom(d => d.block === '1-back' || d.block === '2-back')
                 .values();
 
-            let tableHtml = "<h2>実験結果</h2><table><tr><th>条件</th><th>試行</th><th>正誤</th><th>反応時間(ms)</th></tr>";
+            let tableHtml = "<h2>結果ノート</h2><div style='overflow-x:auto;'><table><tr><th>ゲーム</th><th>かいめ</th><th>正解？</th><th>時間(ms)</th></tr>";
             experimentData.forEach(d => {
                 const choice = d.response === 0 ? true : (d.response === 1 ? false : null);
                 const correct = (d.isTarget !== undefined && choice !== null) ? ((d.isTarget && choice === true) || (!d.isTarget && choice === false)) : null;
                 tableHtml += `<tr><td>${d.block}</td><td>${d.index + 1}</td><td>${correct !== null ? (correct ? '○' : '×') : '-'}</td><td>${d.rt ? Math.round(d.rt) : '-'}</td></tr>`;
             });
-            tableHtml += "</table>";
+            tableHtml += "</table></div>";
 
             fetch(GAS_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify(experimentData)
             })
-            .then(() => { displayElement.innerHTML = "<h2>実験終了。ご協力ありがとうございました。</h2>" + tableHtml; })
-            .catch(() => { displayElement.innerHTML = "<h2>終了しました</h2>" + tableHtml; });
+            .then(() => { displayElement.innerHTML = "<h2>✨ おつかれさま！</h2><p>いっしょに遊んでくれてありがとう！</p>" + tableHtml; })
+            .catch(() => { displayElement.innerHTML = "<h2>ありがとう！</h2>" + tableHtml; });
         }
     });
 
     function playSound(text) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 1.8;
+        utterance.rate = 1.2;
+        utterance.pitch = 1.5;
         window.speechSynthesis.speak(utterance);
     }
 
     const participant_info = {
         type: jsPsychSurveyText,
-        questions: [{ prompt: "参加者IDを入力してください", name: 'pid', required: true }],
+        preamble: "<h1>🌸 まもり記憶ゲーム</h1><p>きょうは、記憶力をちょっぴり鍛えてみよう！</p>",
+        questions: [{ prompt: "おなまえを教えてね！", name: 'pid', required: true }],
+        button_label: "ゲームスタート！",
         on_finish: (data) => { jsPsych.data.addProperties({ participant_id: data.response.pid }); }
     };
 
@@ -98,11 +116,11 @@
         const sequence = generateSequence(nback);
         return sequence.map((letter, index) => ({
             type: jsPsychHtmlButtonResponse,
-            stimulus: `<div class="guide">${nback}-Back課題: 第${index + 1}問 / 全20問</div><div class="stimulus">${letter}</div>`,
-            choices: ['同じ (Fキー)', '違う (Jキー)'],
+            stimulus: `<div class="guide">${nback}-Backのきおく</div><div class="stimulus">${letter}</div>`,
+            choices: ['おなじ', 'ちがう'],
             button_html: [
-                '<button class="jspsych-btn" style="background:#00b894; color:white;">同じ (F)</button>', 
-                '<button class="jspsych-btn" style="background:#d63031; color:white;">違う (J)</button>'
+                '<button class="jspsych-btn">おなじ！ (F)</button>', 
+                '<button class="jspsych-btn" style="background:#fffaf0; color:#ff85a2;">ちがう！ (J)</button>'
             ],
             response_ends_trial: false,
             trial_duration: 2000,
@@ -117,8 +135,8 @@
                     answered = true;
                     const rt = performance.now() - startTime;
                     jsPsych.data.addDataToLastTrial({response: idx, rt: rt});
-                    idx === 0 ? playSound("わんっ") : playSound("にゃーん");
-                    buttons[idx].style.transform = "scale(0.9)";
+                    idx === 0 ? playSound("わんわんっ！") : playSound("にゃーん♪");
+                    buttons[idx].style.transform = "scale(0.85)";
                     buttons[idx].style.opacity = "0.7";
                 };
 
@@ -136,18 +154,18 @@
 
     const instructions = (nback) => ({
         type: jsPsychHtmlButtonResponse,
-        stimulus: `<h2>${nback}-Back課題を開始します</h2>` +
+        stimulus: `<h2>レベル：${nback}-Back</h2>` +
                   `<div class="instruction-box">` +
-                  `<strong>ルール：</strong>今出ている文字と、<strong>${nback}つ前の文字</strong>を比べてください。<br>` +
-                  `<ul><li>同じなら：<strong>「同じ」ボタン</strong> または <strong>Fキー</strong></li>` +
-                  `<li>違うなら：<strong>「違う」ボタン</strong> または <strong>Jキー</strong></li></ul>` +
-                  `</div><p>テンポよく答えてくださいね！</p>`,
-        choices: ['開始']
+                  `<strong>🌸 ルール：</strong>今でている文字と、<strong>${nback}つ前の文字</strong>をおぼえてくらべてね。<br>` +
+                  `<ul style="line-height:2.2; list-style:none;"><li>おなじなら：<strong>「おなじ」ボタン</strong> (Fキー)</li>` +
+                  `<li>ちがうなら：<strong>「ちがう」ボタン</strong> (Jキー)</li></ul>` +
+                  `</div><p>じっくり、ゆっくり考えてみてね！</p>`,
+        choices: ['いくよ！']
     });
 
     jsPsych.run([participant_info, 
         instructions(1), ...createBlock(1, '1-back'),
-        {type: jsPsychHtmlButtonResponse, stimulus: "<h2>休憩タイム</h2><p>少し深呼吸してください。次は2つ前の文字を記憶する課題です。</p>", choices: ['開始']}, 
+        {type: jsPsychHtmlButtonResponse, stimulus: "<h2>☕️ ひとやすみ</h2><p>よくがんばったね！<br>次は少しむずかしくなるよ、2つ前をおぼえてね。</p>", choices: ['じゅんびOK！']}, 
         instructions(2), ...createBlock(2, '2-back')
     ]);
 </script>
