@@ -8,31 +8,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { background-color: #fff9f0; font-family: 'Zen Maru Gothic', sans-serif; color: #5d4037; position: relative; overflow-x: hidden; }
-        
         .star-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
         .star { position: absolute; color: #f59e0b; animation: fall linear infinite; }
         @keyframes fall { 0% { transform: translateY(-10px); } 100% { transform: translateY(100vh); } }
-
         h1, h2 { font-family: 'Mochiy Pop One', sans-serif; }
         
         /* カード全体の高さを固定してレイアウト崩れを防ぐ */
-        .card { transit<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>尚絅学院大学 2412A22の心理学者のたまご研究所🐣</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body { background-color: #fff9f0; font-family: 'Zen Maru Gothic', sans-serif; color: #5d4037; position: relative; overflow-x: hidden; }
-        
-        .star-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
-        .star { position: absolute; color: #f59e0b; animation: fall linear infinite; }
-        @keyframes fall { 0% { transform: translateY(-10px); } 100% { transform: translateY(100vh); } }
-
-        h1, h2 { font-family: 'Mochiy Pop One', sans-serif; }
-        
         .card { transition: all 0.5s ease; position: relative; overflow: hidden; min-height: 220px; cursor: pointer; background: rgba(255, 255, 255, 0.9); display: flex; flex-direction: column; }
         .card.active { background-color: #1f2937 !important; color: #ffffff !important; }
         .card.active h2 { color: #fce4ec !important; }
@@ -46,8 +27,10 @@
         .card:hover .animal-chick, .card.active .animal-chick { animation: animalRotate 1s ease-in-out; }
         .card:hover .animal-dog, .card.active .animal-dog { animation: animalSwing 1.5s ease-in-out infinite; }
         .card:hover .animal-cat, .card.active .animal-cat { animation: animalJump 0.8s ease-in-out infinite; }
+        .card:hover .animal-hatch, .card.active .animal-hatch { animation: animalRotate 1s ease-in-out; }
 
-        .action-container { position: absolute; bottom: 20px; left: 20px; right: 20px; display: flex; flex-wrap: wrap; gap: 10px; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        /* ボタンを絶対配置にすることでレイアウトに影響しないようにする */
+        .action-container { position: absolute; bottom: 20px; left: 64px; opacity: 0; visibility: hidden; transition: all 0.3s ease; display: flex; flex-wrap: wrap; gap: 8px; }
         .card:hover .action-container, .card.active .action-container { opacity: 1; visibility: visible; }
         
         .typing-container { min-height: 3em; }
@@ -68,6 +51,47 @@
         <p class="text-white mt-4 text-2xl font-bold">実験へ移動します...</p>
     </div>
 
+    <div class="max-w-3xl mx-auto relative z-10">
+        <header class="text-center mb-12">
+            <h1 class="text-3xl sm:text-4xl font-bold text-pink-400 mb-4 tracking-tight">
+                尚絅学院大学 2412A22的<br>心理学者のたまご研究所🐣
+            </h1>
+        </header>
+
+        <main class="grid gap-6">
+            <section class="card p-6 rounded-3xl border-4 border-pink-100 shadow-sm" onmouseover="this.classList.add('active')" onmouseout="this.classList.remove('active')" ontouchstart="this.classList.toggle('active')">
+                <div class="flex items-center mb-2"><span class="animal-icon animal-chick">🐤</span><h2 class="text-xl font-bold">実験0：はじめてのWebページ</h2></div>
+                <div class="typing-container ml-16"><p class="typing">第2回で作成した記念すべき「Hello World」のページです。</p></div>
+                <div class="action-container"><button onclick="triggerZoom('🐤', 'hello_world.html')" class="px-6 py-2 bg-pink-300 text-white font-bold rounded-full">実験0へ進む</button></div>
+            </section>
+
+            <section class="card p-6 rounded-3xl border-4 border-purple-100 shadow-sm" onmouseover="this.classList.add('active')" onmouseout="this.classList.remove('active')" ontouchstart="this.classList.toggle('active')">
+                <div class="flex items-center mb-2"><span class="animal-icon animal-dog">🐶</span><h2 class="text-xl font-bold">実験1：ストループ課題</h2></div>
+                <div class="typing-container ml-16"><p class="typing">文字の意味と色が違うとき、脳はどう反応するでしょうか？</p></div>
+                <div class="action-container"><button onclick="triggerZoom('🐶', 'stroop.html')" class="px-6 py-2 bg-purple-300 text-white font-bold rounded-full">実験1へ進む</button></div>
+            </section>
+
+            <section class="card p-6 rounded-3xl border-4 border-blue-100 shadow-sm" onmouseover="this.classList.add('active')" onmouseout="this.classList.remove('active')" ontouchstart="this.classList.toggle('active')">
+                <div class="flex items-center mb-2"><span class="animal-icon animal-cat">🐈</span><h2 class="text-xl font-bold">実験2：ミュラー・リヤー錯視</h2></div>
+                <div class="typing-container ml-16"><p class="typing">同じ長さの線なのに、なぜ違って見えるのかを探ります。</p></div>
+                <div class="action-container"><button onclick="triggerZoom('🐈', 'muller_lyer_final.html')" class="px-6 py-2 bg-blue-300 text-white font-bold rounded-full">実験2へ進む</button></div>
+            </section>
+
+            <!-- 実験3：N-back課題 -->
+            <section class="card p-6 rounded-3xl border-4 border-green-100 shadow-sm" onmouseover="this.classList.add('active')" onmouseout="this.classList.remove('active')" ontouchstart="this.classList.toggle('active')">
+                <div class="flex items-center mb-2"><span class="animal-icon animal-hatch">🐣</span><h2 class="text-xl font-bold">実験3：N-back課題</h2></div>
+                <div class="typing-container ml-16"><p class="typing">1-back/2-back課題によるワーキングメモリ測定です。</p></div>
+                <div class="action-container">
+                    <button onclick="triggerZoom('🐣', 'nback.html')" class="px-5 py-2 bg-green-500 text-white font-bold rounded-full">実験開始</button>
+                    <a href="https://github.com/re-katsu/my-experiment/blob/main/preregistration.md" target="_blank" class="px-4 py-2 border-2 border-green-500 text-green-700 font-bold rounded-full bg-white hover:bg-green-50 transition">プレレジを確認</a>
+                    <a href="https://github.com/re-katsu/my-experiment/commits/main/preregistration.md" target="_blank" class="text-xs text-gray-500 underline self-center">履歴</a>
+                </div>
+            </section>
+        </main>
+
+        <footer class="mt-16 text-center text-sm text-gray-400">&copy; 2026 尚絅学院大学 心理学者のたまご研究所 2412A22</footer>
+    </div>
+
     <script>
         const container = document.getElementById('star-container');
         for (let i = 0; i < 30; i++) {
@@ -82,56 +106,11 @@
         }
 
         function triggerZoom(emoji, url) {
-            if (!url || url === '#') return;
             const overlay = document.getElementById('zoom-overlay');
             document.getElementById('zoom-animal').innerHTML = emoji;
             overlay.style.display = 'flex';
             setTimeout(() => { window.location.href = url; }, 1500);
         }
     </script>
-
-    <div class="max-w-3xl mx-auto relative z-10">
-        <header class="text-center mb-12">
-            <h1 class="text-3xl sm:text-4xl font-bold text-pink-400 mb-4 tracking-tight">
-                尚絅学院大学 2412A22の<br>心理学者のたまご研究所🐣
-            </h1>
-        </header>
-
-        <main class="grid gap-6">
-            <!-- 実験0 -->
-            <section class="card p-6 rounded-3xl border-4 border-pink-100 shadow-sm" onmouseover="this.classList.add('active')" onmouseout="this.classList.remove('active')" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
-                <div class="flex items-center mb-2"><span class="animal-icon animal-chick">🐤</span><h2 class="text-xl font-bold">実験0：はじめてのWebページ</h2></div>
-                <div class="typing-container ml-16"><p class="typing">記念すべき「Hello World」のページです。</p></div>
-                <div class="action-container"><button onclick="triggerZoom('🐤', 'hello_world.html')" class="px-6 py-3 bg-pink-300 text-white font-bold rounded-full">実験0へ進む</button></div>
-            </section>
-
-            <!-- 実験1：ストループ -->
-            <section class="card p-6 rounded-3xl border-4 border-purple-100 shadow-sm" onmouseover="this.classList.add('active')" onmouseout="this.classList.remove('active')" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
-                <div class="flex items-center mb-2"><span class="animal-icon animal-dog">🐶</span><h2 class="text-xl font-bold">実験1：ストループ課題</h2></div>
-                <div class="typing-container ml-16"><p class="typing">文字の意味と色が違うとき、脳はどう反応するでしょうか？</p></div>
-                <div class="action-container"><button onclick="triggerZoom('🐶', 'stroop.html')" class="px-6 py-3 bg-purple-300 text-white font-bold rounded-full">実験1へ進む</button></div>
-            </section>
-
-            <!-- 実験2：ミュラーリヤー -->
-            <section class="card p-6 rounded-3xl border-4 border-blue-100 shadow-sm" onmouseover="this.classList.add('active')" onmouseout="this.classList.remove('active')" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
-                <div class="flex items-center mb-2"><span class="animal-icon animal-cat">🐈</span><h2 class="text-xl font-bold">実験2：ミュラー・リヤー錯視</h2></div>
-                <div class="typing-container ml-16"><p class="typing">同じ長さの線なのに、なぜ違って見えるのかを探ります。</p></div>
-                <div class="action-container"><button onclick="triggerZoom('🐈', 'muller_lyer_final.html')" class="px-6 py-3 bg-blue-300 text-white font-bold rounded-full">実験2へ進む</button></div>
-            </section>
-
-            <!-- 実験3：N-back課題 -->
-            <section class="card p-6 rounded-3xl border-4 border-green-100 shadow-sm" onmouseover="this.classList.add('active')" onmouseout="this.classList.remove('active')" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
-                <div class="flex items-center mb-2"><span class="animal-icon animal-chick">🐣</span><h2 class="text-xl font-bold">実験3：N-back課題</h2></div>
-                <div class="typing-container ml-16"><p class="typing">1-back/2-back課題によるワーキングメモリ測定です。</p></div>
-                <div class="action-container">
-                    <button onclick="triggerZoom('🐣', 'nback.html')" class="px-5 py-2 bg-green-500 text-white font-bold rounded-full hover:bg-green-600 transition">実験開始</button>
-                    <a href="https://github.com/re-katsu/my-experiment/blob/main/preregistration.md" target="_blank" class="px-4 py-2 border-2 border-green-500 text-green-700 font-bold rounded-full hover:bg-green-50 transition">プレレジを確認</a>
-                    <a href="https://github.com/re-katsu/my-experiment/commits/main/preregistration.md" target="_blank" class="px-2 py-2 text-xs text-gray-400 underline hover:text-green-500 transition self-center">履歴</a>
-                </div>
-            </section>
-        </main>
-
-        <footer class="mt-16 text-center text-sm text-gray-400">&copy; 2026 尚絅学院大学 心理学者のたまご研究所 2412A22</footer>
-    </div>
 </body>
 </html>
