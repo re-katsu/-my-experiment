@@ -57,11 +57,20 @@
                 .filterCustom(d => d.block === '1-back' || d.block === '2-back')
                 .values();
 
-            let tableHtml = "<h2>結果ノート</h2><div style='overflow-x:auto;'><table><tr><th>ゲーム</th><th>かいめ</th><th>正解？</th><th>時間(ms)</th></tr>";
+            // 結果テーブルの構築（回答状況を追加）
+            let tableHtml = "<h2>結果ノート</h2><div style='overflow-x:auto;'><table><tr><th>ゲーム</th><th>かいめ</th><th>正解？</th><th>状況</th><th>時間(ms)</th></tr>";
             experimentData.forEach(d => {
-                const choice = d.response === 0 ? true : (d.response === 1 ? false : null);
-                const correct = (d.isTarget !== undefined && choice !== null) ? ((d.isTarget && choice === true) || (!d.isTarget && choice === false)) : null;
-                tableHtml += `<tr><td>${d.block}</td><td>${d.index + 1}</td><td>${correct !== null ? (correct ? '○' : '×') : '-'}</td><td>${d.rt ? Math.round(d.rt) : '-'}</td></tr>`;
+                const isAnswered = d.response !== undefined && d.response !== null;
+                const choice = isAnswered ? (d.response === 0 ? true : false) : null;
+                const correct = (d.isTarget !== undefined && isAnswered) ? ((d.isTarget && choice === true) || (!d.isTarget && choice === false)) : null;
+                
+                tableHtml += `<tr>
+                    <td>${d.block}</td>
+                    <td>${d.index + 1}</td>
+                    <td>${correct !== null ? (correct ? '○' : '×') : '-'}</td>
+                    <td>${isAnswered ? '回答済' : '未回答'}</td>
+                    <td>${d.rt ? Math.round(d.rt) : '-'}</td>
+                </tr>`;
             });
             tableHtml += "</table></div>";
 
