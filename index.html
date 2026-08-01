@@ -13,7 +13,6 @@
         @keyframes fall { 0% { transform: translateY(-10px); } 100% { transform: translateY(100vh); } }
         h1, h2 { font-family: 'Mochiy Pop One', sans-serif; }
         
-        /* カード全体の高さを固定してレイアウト崩れを防ぐ */
         .card { transition: all 0.5s ease; position: relative; overflow: hidden; min-height: 220px; cursor: pointer; background: rgba(255, 255, 255, 0.9); display: flex; flex-direction: column; }
         .card.active { background-color: #1f2937 !important; color: #ffffff !important; }
         .card.active h2 { color: #fce4ec !important; }
@@ -29,7 +28,6 @@
         .card:hover .animal-cat, .card.active .animal-cat { animation: animalJump 0.8s ease-in-out infinite; }
         .card:hover .animal-hatch, .card.active .animal-hatch { animation: animalRotate 1s ease-in-out; }
 
-        /* ボタンを絶対配置にすることでレイアウトに影響しないようにする */
         .action-container { position: absolute; bottom: 20px; left: 64px; opacity: 0; visibility: hidden; transition: all 0.3s ease; display: flex; flex-wrap: wrap; gap: 8px; }
         .card:hover .action-container, .card.active .action-container { opacity: 1; visibility: visible; }
         
@@ -59,6 +57,7 @@
         </header>
 
         <main class="grid gap-6">
+            <!-- Experiments list... -->
             <section class="card p-6 rounded-3xl border-4 border-pink-100 shadow-sm" onmouseover="this.classList.add('active')" onmouseout="this.classList.remove('active')" ontouchstart="this.classList.toggle('active')">
                 <div class="flex items-center mb-2"><span class="animal-icon animal-chick">🐤</span><h2 class="text-xl font-bold">実験0：はじめてのWebページ</h2></div>
                 <div class="typing-container ml-16"><p class="typing">第2回で作成した記念すべき「Hello World」のページです。</p></div>
@@ -80,14 +79,14 @@
                 <div class="action-container"><button onclick="triggerZoom('🐈', 'muller_lyer_final.html')" class="px-6 py-2 bg-blue-300 text-white font-bold rounded-full">実験2へ進む</button></div>
             </section>
 
-            <!-- 実験3：N-back課題 -->
+            <!-- Experiment 3: N-back task with updated links -->
             <section class="card p-6 rounded-3xl border-4 border-green-100 shadow-sm" onmouseover="this.classList.add('active')" onmouseout="this.classList.remove('active')" ontouchstart="this.classList.toggle('active')">
                 <div class="flex items-center mb-2"><span class="animal-icon animal-hatch">🐣</span><h2 class="text-xl font-bold">実験3：N-back課題</h2></div>
                 <div class="typing-container ml-16"><p class="typing">1-back/2-back課題によるワーキングメモリ測定です。</p></div>
                 <div class="action-container">
-                    <button onclick="triggerZoom('🐣', 'nback.html')" class="px-5 py-2 bg-green-500 text-white font-bold rounded-full">実験開始</button>
-                    <a href="https://github.com/re-katsu/my-experiment/blob/main/preregistration.md" target="_blank" class="px-4 py-2 border-2 border-green-500 text-green-700 font-bold rounded-full bg-white hover:bg-green-50 transition">プレレジを確認</a>
-                    <a href="https://github.com/re-katsu/my-experiment/commits/main/preregistration.md" target="_blank" class="text-xs text-gray-500 underline self-center">履歴</a>
+                    <button onclick="triggerZoom('🐣', 'nback.html')" class="px-4 py-2 bg-green-500 text-white font-bold rounded-full">実験開始</button>
+                    <a href="my_exp_report.html" class="px-4 py-2 border-2 border-green-500 text-green-700 font-bold rounded-full bg-white hover:bg-green-50 transition">レポートを読む</a>
+                    <a href="https://github.com/re-katsu/my-experiment/blob/main/preregistration.md" target="_blank" class="px-4 py-2 border-2 border-green-500 text-green-700 font-bold rounded-full bg-white hover:bg-green-50 transition">プレレジ</a>
                 </div>
             </section>
         </main>
